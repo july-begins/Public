@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>待产包 & 新生儿护理 · 自动同步</title>
+  <title>待产包 & 新生儿护理 · 最终版</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #faf7f2; color: #3e362e; padding: 12px; max-width: 750px; margin: 0 auto; }
@@ -74,12 +74,10 @@
 <div class="header"><h1>🤰🏻 待产包 & 护理清单 👶🏻</h1><p>智能时间线 · GitHub 自动同步</p></div>
 
 <div class="sync-controls">
-  <button class="btn btn-outline" id="setupSyncBtn">⚙️ 云同步设置</button>
-  <button class="btn btn-outline" id="uploadBtn">⬆️ 立即同步</button>
-  <button class="btn btn-outline" id="copySyncBtn">📋 复制同步码</button>
-  <button class="btn btn-outline" id="pasteSyncBtn">📋 粘贴并恢复</button>
-  <button class="btn btn-outline" id="exportBtn">💾 导出备份</button>
-  <button class="btn btn-outline" id="importBtn">📂 导入备份</button>
+  <button class="btn btn-outline" id="uploadBtn">⬆️ 同步到云端</button>
+  <button class="btn btn-outline" id="downloadBtn">⬇️ 同步到本地</button>
+  <button class="btn btn-outline" id="exportBtn">💾 本地备份</button>
+  <button class="btn btn-outline" id="importBtn">📂 恢复备份</button>
 </div>
 <div class="sync-status" id="syncStatus">☁️ 未配置云同步</div>
 <input type="file" id="importFileInput" accept=".json" style="display:none;">
@@ -184,7 +182,7 @@
 
 <script>
 (function() {
-  // ==================== 完整物品库（70+物品） ====================
+  // ==================== 完整物品库 (70+物品) ====================
   const masterLibrary = [
     { id:1, name:"产褥垫", role:"妈妈", cat:"卫生", emoji:"🛏️", qty:15, s:-3, e:5, desc:"60×90cm一次性防水垫", what:"一次性防水垫巾", why:"防止羊水恶露污染", how:"平铺臀下脏即换", benefit:"方便卫生", alt:"子初/十月结晶" },
     { id:2, name:"产妇卫生巾", role:"妈妈", cat:"卫生", emoji:"🩹", qty:10, s:0, e:7, desc:"L/XL加大吸收", what:"加大卫生巾", why:"准确评估出血量", how:"每2-3h更换", benefit:"干爽不侧漏", alt:"安心裤" },
@@ -247,10 +245,10 @@
     { id:205, name:"满月体检", role:"宝宝", cat:"疫苗/检查", emoji:"📋", qty:0, s:28, e:32, desc:"评估发育", what:"体格检查", why:"早发现偏离", how:"社区/儿科", benefit:"健康监测", alt:"" }
   ];
 
-  const STORAGE_CUSTOM = 'bb_custom_pages_final';
-  const STORAGE_STATES = 'bb_states_pages_final';
-  const STORAGE_DAY = 'bb_day_pages_final';
-  const GIT_CONFIG_KEY = 'gh_config_pages_final';
+  const STORAGE_CUSTOM = 'bb_custom_final';
+  const STORAGE_STATES = 'bb_states_final';
+  const STORAGE_DAY = 'bb_day_final';
+  const GIT_CONFIG_KEY = 'gh_config_final';
 
   let customItems = JSON.parse(localStorage.getItem(STORAGE_CUSTOM) || '[]');
   let itemStates = JSON.parse(localStorage.getItem(STORAGE_STATES) || '{}');
@@ -280,7 +278,7 @@
     const current = getState(id);
     itemStates[id] = { ...current, ...updates };
     saveLocal();
-    scheduleAutoSync();
+    if (ghConfig) scheduleAutoSync();
   }
 
   function allItems() {
@@ -581,27 +579,27 @@
     if (!ghConfig) return;
     clearTimeout(autoSyncTimer);
     autoSyncTimer = setTimeout(async () => {
-      const ok = await uploadToGitHub();
-      if (ok) document.getElementById('syncStatus').textContent = '☁️ 已自动同步';
-      else document.getElementById('syncStatus').textContent = '⚠️ 同步失败';
+      await uploadToGitHub();
     }, 2000);
   }
 
   // 按钮事件
   document.getElementById('uploadBtn').addEventListener('click', async () => {
     if (!ghConfig) return document.getElementById('syncModal').style.display = 'flex';
-    showToast('正在同步...');
+    showToast('正在同步到云端...');
     const ok = await uploadToGitHub();
-    showToast(ok ? '已同步' : '失败');
+    showToast(ok ? '已同步' : '同步失败');
   });
 
-  document.getElementById('setupSyncBtn').addEventListener('click', () => {
-    if (ghConfig) {
-      document.getElementById('repoUrl').value = ghConfig.url || 'https://github.com/july-begins/baby-checklist';
-      document.getElementById('repoToken').value = ghConfig.token || '';
-    }
-    document.getElementById('syncModal').style.display = 'flex';
+  document.getElementById('downloadBtn').addEventListener('click', async () => {
+    if (!ghConfig) return document.getElementById('syncModal').style.display = 'flex';
+    showToast('正在从云端同步...');
+    const ok = await downloadFromGitHub();
+    if (ok) { document.getElementById('dayInput').value = currentDay; render(); updateAlert(); }
+    showToast(ok ? '已更新' : '下载失败');
   });
+
+  // 云同步设置弹窗
   document.getElementById('syncSaveBtn').addEventListener('click', () => {
     const url = document.getElementById('repoUrl').value.trim();
     const token = document.getElementById('repoToken').value.trim();
@@ -609,11 +607,8 @@
     ghConfig = { url, token, path: 'data.json' };
     localStorage.setItem(GIT_CONFIG_KEY, JSON.stringify(ghConfig));
     document.getElementById('syncModal').style.display = 'none';
-    showToast('配置已保存，将自动同步');
-    document.getElementById('syncStatus').textContent = '☁️ 已配置，修改后自动同步';
-    downloadFromGitHub().then(ok => {
-      if (ok) { document.getElementById('dayInput').value = currentDay; render(); updateAlert(); }
-    });
+    showToast('配置已保存');
+    document.getElementById('syncStatus').textContent = '☁️ 已配置';
   });
   document.getElementById('testConnBtn').addEventListener('click', async () => {
     const url = document.getElementById('repoUrl').value.trim();
@@ -631,23 +626,11 @@
   });
   document.getElementById('syncCloseBtn').addEventListener('click', () => { document.getElementById('syncModal').style.display = 'none'; });
 
-  // 剪切板与文件备份
-  document.getElementById('copySyncBtn').addEventListener('click', async () => {
-    const data = btoa(encodeURIComponent(JSON.stringify({ customItems, itemStates, currentDay })));
-    await navigator.clipboard.writeText(data);
-    showToast('同步码已复制');
-  });
-  document.getElementById('pasteSyncBtn').addEventListener('click', async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      const json = JSON.parse(decodeURIComponent(atob(text)));
-      customItems = json.customItems; itemStates = json.itemStates; currentDay = json.currentDay;
-      saveLocal(); render(); updateAlert(); showToast('已恢复');
-    } catch { showToast('无效同步码'); }
-  });
+  // 导入导出
   document.getElementById('exportBtn').addEventListener('click', () => {
     const blob = new Blob([JSON.stringify({ customItems, itemStates, currentDay })], {type:'application/json'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '待产包备份.json'; a.click();
+    showToast('备份文件已下载');
   });
   document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFileInput').click());
   document.getElementById('importFileInput').addEventListener('change', e => {
@@ -657,7 +640,8 @@
       try {
         const data = JSON.parse(ev.target.result);
         customItems = data.customItems; itemStates = data.itemStates; currentDay = data.currentDay;
-        saveLocal(); render(); updateAlert(); showToast('已恢复');
+        saveLocal(); document.getElementById('dayInput').value = currentDay; render(); updateAlert();
+        showToast('已恢复备份');
       } catch { showToast('无效文件'); }
     };
     reader.readAsText(file);
@@ -675,11 +659,7 @@
   render();
   updateAlert();
   if (ghConfig) {
-    document.getElementById('syncStatus').textContent = '☁️ 正在连接 GitHub...';
-    downloadFromGitHub().then(ok => {
-      if (ok) { document.getElementById('dayInput').value = currentDay; render(); updateAlert(); }
-      document.getElementById('syncStatus').textContent = ok ? '☁️ 已连接，修改自动同步' : '⚠️ 离线模式（配置已保存）';
-    });
+    document.getElementById('syncStatus').textContent = '☁️ 已配置，修改后自动同步';
   }
 })();
 </script>
