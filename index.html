@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>待产包 & 新生儿护理 · 最终版</title>
+  <style>
+    /* 样式与之前相同，省略以节省篇幅，请复制之前完整版 CSS */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #faf7f2; color: #3e362e; padding: 12px; max-width: 750px; margin: 0 auto; }
+    .header { text-align: center; margin: 10px 0 16px; }
+    .header h1 { font-size: 1.8rem; color: #b08968; }
+    .header p { color: #8b7355; font-size: 0.9rem; }
+
+    .sync-controls { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; align-items: center; }
+    .btn { padding: 10px 18px; border-radius: 24px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: #b08968; color: white; }
+    .btn-outline { background: #fff; color: #b08968; border: 2px solid #b08968; }
+    .sync-status { font-size: 0.8rem; text-align: center; margin: 6px 0 12px; color: #8b7355; }
+
+    .toggle-sync { background: #f0e5d8; border: none; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
+    .toggle-sync.active { background: #b08968; color: white; }
+
+    .timeline-bar { background: #fff; border-radius: 24px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .day-input { width: 75px; padding: 10px; border-radius: 16px; border: 2px solid #ddc; text-align: center; font-size: 1.1rem; font-weight: 700; color: #b08968; }
+    .stage-badge { background: #ede0d4; padding: 8px 18px; border-radius: 20px; font-weight: 700; color: #5c4330; }
+    .quick-stages { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .stage-dot { padding: 8px 14px; border-radius: 18px; background: #f0e5d8; font-size: 0.8rem; font-weight: 600; color: #7f5539; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+    .stage-dot.active { background: #b08968; color: white; border-color: #b08968; }
+
+    .alert-panel { background: #fffbf0; border: 2px solid #e7c97b; border-radius: 20px; padding: 16px; margin-bottom: 16px; display: flex; gap: 12px; }
+    .progress-panel { background: #fff; border-radius: 20px; padding: 14px 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 15px; }
+    .progress-bar { flex: 1; height: 10px; background: #ede0d4; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #b08968; width: 0%; transition: width 0.3s; }
+
+    .view-row, .filter-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .view-btn, .filter-chip { background: #fff; border: 1px solid #ddcec0; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+    .view-btn.active, .filter-chip.active { background: #b08968; color: white; border-color: #b08968; }
+
+    .item-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    .item-card { background: #fff; border-radius: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border-left: 6px solid #ddcec0; overflow: hidden; }
+    .item-card.urgent { border-left-color: #e6a23c; background: #fffbf5; }
+    .item-card.bought { border-left-color: #e6b85c; }
+    .item-card.packed { border-left-color: #9caf8d; }
+    .item-main { display: flex; align-items: center; gap: 12px; padding: 14px; cursor: pointer; }
+    .item-emoji { font-size: 2rem; min-width: 45px; }
+    .item-info { flex: 1; }
+    .item-title { font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .item-badge { background: #f0e5d8; color: #7f5539; font-size: 0.65rem; padding: 2px 10px; border-radius: 12px; }
+    .remain-badge { background: #f4ede4; border-radius: 12px; padding: 6px 12px; font-weight: 700; color: #5c4330; display: flex; align-items: center; gap: 6px; }
+    .remain-badge.low { background: #ffeaea; color: #c0392b; }
+    .qty-btn { background: #fff; border: 1.5px solid #c4b3a0; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .status-btn { border: 1.5px solid #ddcbbd; background: #fff; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.75rem; cursor: pointer; }
+    .status-btn.active-bought { background: #e6b85c; border-color: #e6b85c; color: white; }
+    .status-btn.active-packed { background: #9caf8d; border-color: #9caf8d; color: white; }
+    .status-btn.active-done { background: #7fa998; border-color: #7fa998; color: white; }
+    .status-btn.active-skip { background: #c4b7a6; border-color: #c4b7a6; color: white; }
+    .status-btn.active-none { background: #e9e1d8; border-color: #c0b3a5; }
+
+    .detail-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #fdfaf5; border-top: 1px dashed #ddcec0; padding: 0 14px; }
+    .detail-panel.open { max-height: 600px; padding: 14px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; }
+    .detail-item { background: #fff; border-radius: 12px; padding: 8px; border: 1px solid #f0e5d8; }
+    .detail-label { font-weight: 700; color: #b08968; font-size: 0.7rem; margin-bottom: 4px; }
+    .brand-row { display: flex; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
+    .brand-row input { flex: 1; padding: 6px; border-radius: 8px; border: 1px solid #ddc; min-width: 80px; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal { background: white; border-radius: 24px; padding: 20px; max-width: 500px; width: 90%; max-height: 85vh; overflow-y: auto; }
+    .modal h3 { color: #b08968; margin-bottom: 14px; }
+    .modal input, .modal select, .modal textarea { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ddc; margin-bottom: 10px; font-size: 0.9rem; }
+    .modal .btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #3e362e; color: white; padding: 10px 24px; border-radius: 24px; opacity: 0; transition: 0.3s; z-index: 999; }
+    .toast.show { opacity: 0.9; }
+  </style>
+</head>
+<body>
+<div class="header"><h1>🤰🏻 待产包 & 护理清单 👶🏻</h1><p>智能时间线 · GitHub 自动同步</p></div>
+
+<div class="sync-controls">
+  <button class="btn btn-outline" id="uploadBtn">⬆️ 同步到云端</button>
+  <button class="btn btn-outline" id="downloadBtn">⬇️ 同步到本地</button>
+  <button class="btn btn-outline" id="exportBtn">💾 本地备份</button>
+  <button class="btn btn-outline" id="importBtn">📂 恢复备份</button>
+  <button class="toggle-sync active" id="autoSyncToggle">🔄 自动同步</button>
+</div>
+<div class="sync-status" id="syncStatus">☁️ 未配置云同步</div>
+<input type="file" id="importFileInput" accept=".json" style="display:none;">
+
+<div class="timeline-bar">
+  <div style="display:flex; align-items:center; gap:10px;">
+    <label>📅 当前天数：</label>
+    <input type="number" class="day-input" id="dayInput" value="0" min="-7" max="42">
+    <span class="stage-badge" id="stageLabel">住院期间</span>
+  </div>
+  <div class="quick-stages" id="quickStages">
+    <span class="stage-dot" data-days="-3">产前3天</span>
+    <span class="stage-dot" data-days="0">生产日</span>
+    <span class="stage-dot active" data-days="3">产后3天</span>
+    <span class="stage-dot" data-days="15">产后15天</span>
+    <span class="stage-dot" data-days="30">满月</span>
+  </div>
+</div>
+
+<div class="alert-panel" id="alertPanel"><div class="alert-icon">🔔</div><div class="alert-text" id="alertText">加载中...</div></div>
+
+<div class="progress-panel">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-stats" id="progressText">0%</div>
+</div>
+
+<div class="view-row">
+  <button class="view-btn active" data-view="active">📋 可支配</button>
+  <button class="view-btn" data-view="pending">📝 待准备</button>
+  <button class="view-btn" data-view="done">✅ 已完成</button>
+  <button class="view-btn" data-view="all">🗂️ 全部</button>
+</div>
+<div class="filter-row">
+  <button class="filter-chip active" data-role="all">👥 全部</button>
+  <button class="filter-chip" data-role="妈妈">👩🏻 妈妈</button>
+  <button class="filter-chip" data-role="宝宝">👶🏻 宝宝</button>
+</div>
+
+<button class="btn btn-primary" id="addItemBtn">＋ 手动添加</button>
+<button class="btn btn-outline" id="openLibraryBtn">📚 物品库添加</button>
+
+<div class="item-list" id="itemList"></div>
+<div class="toast" id="toast"></div>
+
+<!-- 云同步设置弹窗 -->
+<div class="modal-overlay" id="syncModal">
+  <div class="modal">
+    <h3>☁️ GitHub 云同步设置</h3>
+    <label>私有仓库地址 (HTTPS)</label>
+    <input type="text" id="repoUrl" value="https://github.com/july-begins/baby-checklist">
+    <label>个人访问令牌 (Token，需 repo 权限)</label>
+    <input type="password" id="repoToken">
+    <div class="btn-row">
+      <button class="status-btn" id="testConnBtn">测试连接</button>
+      <button class="status-btn active-bought" id="syncSaveBtn">保存</button>
+      <button class="status-btn" id="syncCloseBtn">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 手动添加弹窗 -->
+<div class="modal-overlay" id="manualModal">
+  <div class="modal">
+    <h3>➕ 添加物品</h3>
+    <div style="display:flex; gap:8px; margin-bottom:12px;">
+      <input type="text" id="searchName" placeholder="搜索内置库" style="flex:1;">
+      <button class="status-btn active-bought" id="searchItemBtn">🔍</button>
+      <button class="status-btn" id="jdSearchBtn">🛒京东</button>
+      <button class="status-btn" id="taobaoSearchBtn">🛒淘宝</button>
+      <button class="status-btn" id="clipboardBtn">📋剪切板</button>
+    </div>
+    <label>名称 *</label><input type="text" id="mName">
+    <label>角色</label><select id="mRole"><option value="妈妈">妈妈</option><option value="宝宝">宝宝</option></select>
+    <label>类别</label><input type="text" id="mCat" placeholder="如：卫生">
+    <label>开始天数</label><input type="number" id="mStart" value="0">
+    <label>结束天数</label><input type="number" id="mEnd" value="30">
+    <label>描述</label><input type="text" id="mDesc">
+    <label>是什么</label><textarea id="mWhat" rows="2"></textarea>
+    <label>为什么</label><textarea id="mWhy" rows="2"></textarea>
+    <label>怎么使用</label><textarea id="mHow" rows="2"></textarea>
+    <label>好处</label><input type="text" id="mBenefit">
+    <label>备用/规格</label><input type="text" id="mAlt">
+    <div class="btn-row">
+      <button class="status-btn" id="manualClose">取消</button>
+      <button class="status-btn active-bought" id="manualSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 物品库弹窗 -->
+<div class="modal-overlay" id="libraryModal">
+  <div class="modal">
+    <h3>📚 物品库</h3>
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <input type="text" id="libSearch" placeholder="搜索..." style="flex:1;">
+      <select id="libRoleFilter"><option value="all">全部</option><option value="妈妈">妈妈</option><option value="宝宝">宝宝</option></select>
+    </div>
+    <div id="libraryList" style="max-height:50vh; overflow-y:auto;"></div>
+    <div class="btn-row"><button class="status-btn" id="libraryClose">关闭</button></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // 完整物品库（Unicode 转义避免乱码）
+  const masterLibrary = [
+    { id:1, name:"产褥垫", role:"妈妈", cat:"卫生", emoji:"\u{1F6CF}", qty:15, s:-3, e:5, desc:"60×90cm一次性防水垫", what:"一次性防水垫巾", why:"防止羊水恶露污染", how:"平铺臀下脏即换", benefit:"方便卫生", alt:"子初/十月结晶" },
+    { id:2, name:"产妇卫生巾", role:"妈妈", cat:"卫生", emoji:"\u{1FA79}", qty:10, s:0, e:7, desc:"L/XL加大吸收", what:"加大卫生巾", why:"准确评估出血量", how:"每2-3h更换", benefit:"干爽不侧漏", alt:"安心裤" },
+    { id:3, name:"一次性内裤", role:"妈妈", cat:"卫生", emoji:"\u{1FA72}", qty:10, s:-1, e:7, desc:"灭菌独立包装", what:"一次性棉内裤", why:"避免清洗感染", how:"每日更换", benefit:"便捷洁净", alt:"" },
+    { id:4, name:"会阴冲洗器", role:"妈妈", cat:"卫生", emoji:"\u{1F6BF}", qty:1, s:0, e:30, desc:"弯头挤压瓶", what:"冲洗瓶", why:"便后冲洗减菌", how:"装温水由前向后冲", benefit:"促进愈合", alt:"手持花洒" },
+    { id:5, name:"一次性马桶垫", role:"妈妈", cat:"卫生", emoji:"\u{1F6BD}", qty:20, s:-1, e:5, desc:"防水防滑", what:"马桶坐垫", why:"隔离细菌", how:"每厕更换", benefit:"卫生方便", alt:"" },
+    { id:6, name:"会阴冷敷贴", role:"妈妈", cat:"卫生", emoji:"\u2744\uFE0F", qty:4, s:0, e:2, desc:"物理镇痛", what:"冷敷贴", why:"减轻伤口水肿", how:"产后24h内敷", benefit:"缓解疼痛", alt:"地球妈妈喷雾" },
+    { id:7, name:"哺乳睡衣", role:"妈妈", cat:"衣物", emoji:"\u{1F45A}", qty:3, s:-1, e:30, desc:"侧开口方便哺乳", what:"棉质睡衣", why:"方便哺乳", how:"备2-3套", benefit:"保暖", alt:"" },
+    { id:8, name:"哺乳内衣+乳垫", role:"妈妈", cat:"衣物", emoji:"\u{1F459}", qty:3, s:0, e:180, desc:"无钢圈", what:"文胸及吸奶垫", why:"承托防漏", how:"湿即更换", benefit:"防下垂", alt:"Lansinoh" },
+    { id:9, name:"长筒棉袜+拖鞋", role:"妈妈", cat:"衣物", emoji:"\u{1F9E6}", qty:2, s:-1, e:7, desc:"保暖防滑", what:"棉袜拖鞋", why:"足部保暖", how:"下床即穿", benefit:"预防关节不适", alt:"" },
+    { id:10, name:"出院长袖衣裤+帽子", role:"妈妈", cat:"衣物", emoji:"\u{1F9E5}", qty:1, s:-1, e:0, desc:"防风保暖", what:"外衣", why:"产后避风", how:"出院穿戴", benefit:"预防感冒", alt:"" },
+    { id:11, name:"收腹带(剖宫产)", role:"妈妈", cat:"护理", emoji:"\u{1F397}\uFE0F", qty:1, s:0, e:14, desc:"医用腹带", what:"棉质腹带", why:"固定伤口", how:"遵医嘱绑", benefit:"保护切口", alt:"顺产不推荐" },
+    { id:12, name:"吸奶器", role:"妈妈", cat:"哺乳", emoji:"\u{1F37C}", qty:1, s:0, e:180, desc:"电动/手动", what:"吸乳装置", why:"维持泌乳", how:"每3h吸15分钟", benefit:"避免乳腺炎", alt:"美德乐" },
+    { id:13, name:"乳头霜", role:"妈妈", cat:"哺乳", emoji:"\u{1F4A7}", qty:1, s:0, e:60, desc:"羊毛脂", what:"修护膏", why:"防皲裂", how:"哺乳后涂", benefit:"缓解疼痛", alt:"Lansinoh" },
+    { id:14, name:"哺乳枕", role:"妈妈", cat:"哺乳", emoji:"\u{1F369}", qty:1, s:0, e:180, desc:"U型枕", what:"哺乳枕", why:"避免弯腰", how:"喂奶时使用", benefit:"预防妈妈手", alt:"" },
+    { id:15, name:"弯头吸管/吸管杯", role:"妈妈", cat:"其他", emoji:"\u{1F964}", qty:1, s:0, e:3, desc:"卧床饮水", what:"吸管杯", why:"不便坐起", how:"小口慢饮", benefit:"保证饮水", alt:"" },
+    { id:16, name:"零食+电解质饮料", role:"妈妈", cat:"其他", emoji:"\u{1F34C}", qty:3, s:-3, e:0, desc:"补充体力", what:"零食饮料", why:"待产消耗", how:"间歇进食", benefit:"维持体力", alt:"遵医嘱" },
+    { id:17, name:"胎心监护带", role:"妈妈", cat:"其他", emoji:"\u{1F4C8}", qty:2, s:-3, e:0, desc:"固定探头", what:"弹力带", why:"卫生", how:"待产时用", benefit:"避免交叉", alt:"" },
+    { id:18, name:"证件资料包", role:"妈妈", cat:"证件", emoji:"\u{1F4C1}", qty:1, s:-7, e:0, desc:"身份证/医保卡等", what:"证件", why:"办理住院", how:"透明袋装", benefit:"避免缺漏", alt:"" },
+    { id:19, name:"手机+充电器", role:"妈妈", cat:"其他", emoji:"\u{1F4F1}", qty:1, s:-3, e:5, desc:"联络记录", what:"通信", why:"联络家属", how:"待产时用", benefit:"保持联系", alt:"" },
+    { id:20, name:"洗漱包", role:"妈妈", cat:"其他", emoji:"\u{1FAA5}", qty:1, s:-1, e:5, desc:"软毛牙刷等", what:"洗漱用品", why:"保持清洁", how:"温水洗漱", benefit:"舒适", alt:"" },
+    { id:21, name:"储奶瓶/储奶袋", role:"妈妈", cat:"哺乳", emoji:"\u{1F3F7}\uFE0F", qty:10, s:1, e:180, desc:"储存母乳", what:"储奶容器", why:"珍贵初乳", how:"标记日期", benefit:"不浪费", alt:"" },
+    { id:22, name:"骨盆带", role:"妈妈", cat:"护理", emoji:"\u{1F9B4}", qty:1, s:3, e:42, desc:"辅助恢复", what:"弹性绑带", why:"耻骨分离", how:"白天佩戴", benefit:"改善骨盆", alt:"" },
+    { id:30, name:"NB纸尿裤", role:"宝宝", cat:"喂养", emoji:"\u{1F476}", qty:60, s:0, e:30, desc:"新生儿专用", what:"小号尿不湿", why:"吸收排泄", how:"2-3h更换", benefit:"防红臀", alt:"花王/尤妮佳" },
+    { id:31, name:"棉柔巾/湿巾", role:"宝宝", cat:"喂养", emoji:"\u{1F9FB}", qty:6, s:0, e:90, desc:"干湿两用", what:"纯棉无纺布", why:"柔软无刺激", how:"温水蘸干", benefit:"减少摩擦", alt:"全棉时代" },
+    { id:32, name:"护臀膏(氧化锌)", role:"宝宝", cat:"喂养", emoji:"\u{1F9F4}", qty:1, s:0, e:180, desc:"隔离刺激", what:"隔离霜", why:"形成保护膜", how:"厚涂", benefit:"防尿布疹", alt:"维蕾德" },
+    { id:33, name:"一段配方奶+软勺", role:"宝宝", cat:"喂养", emoji:"\u{1F944}", qty:1, s:0, e:7, desc:"应急补充", what:"配方奶", why:"母乳不足", how:"勺喂", benefit:"保护亲喂", alt:"液态水奶" },
+    { id:34, name:"奶瓶+清洗工具", role:"宝宝", cat:"喂养", emoji:"\u{1F376}", qty:2, s:0, e:180, desc:"宽口径", what:"奶瓶及工具", why:"防胀气", how:"每次清洗", benefit:"防鹅口疮", alt:"贝亲" },
+    { id:35, name:"连体衣", role:"宝宝", cat:"衣物", emoji:"\u{1F458}", qty:3, s:0, e:30, desc:"A类纯棉", what:"和尚服", why:"方便穿脱", how:"手洗晾晒", benefit:"舒适", alt:"" },
+    { id:36, name:"包被(薄+厚)", role:"宝宝", cat:"衣物", emoji:"\u{1F930}", qty:2, s:0, e:14, desc:"包裹巾", what:"方形包巾", why:"模拟子宫", how:"上紧下松", benefit:"减少惊跳", alt:"襁褓睡袋" },
+    { id:37, name:"胎帽+小袜子", role:"宝宝", cat:"衣物", emoji:"\u{1F9E2}", qty:2, s:0, e:30, desc:"保暖", what:"帽袜", why:"头部散热", how:"松口不勒", benefit:"维持体温", alt:"" },
+    { id:38, name:"口水巾/方巾", role:"宝宝", cat:"衣物", emoji:"\u{1F9E3}", qty:8, s:0, e:90, desc:"擦溢奶", what:"多层纱布", why:"保持干爽", how:"勤换洗", benefit:"防淹脖子", alt:"" },
+    { id:39, name:"安全提篮/座椅", role:"宝宝", cat:"出行", emoji:"\u{1F697}", qty:1, s:0, e:0, desc:"出院用", what:"安全座椅", why:"法律要求", how:"反向安装", benefit:"行车安全", alt:"禁止手抱" },
+    { id:40, name:"碘伏棉签(脐带)", role:"宝宝", cat:"护理", emoji:"\u2601\uFE0F", qty:20, s:0, e:14, desc:"消毒残端", what:"碘伏棉签", why:"防感染", how:"每日消毒", benefit:"脐带脱落", alt:"干燥法" },
+    { id:41, name:"婴儿浴盆+水温计", role:"宝宝", cat:"护理", emoji:"\u{1F6C1}", qty:1, s:3, e:365, desc:"专用浴盆", what:"浴盆", why:"安全沐浴", how:"水温37-38℃", benefit:"清洁", alt:"" },
+    { id:42, name:"婴儿床", role:"宝宝", cat:"睡眠", emoji:"\u{1F6CF}", qty:1, s:0, e:365, desc:"同室不同床", what:"安全婴儿床", why:"降低SIDS", how:"裸床+睡袋仰卧", benefit:"安全睡眠", alt:"" },
+    { id:43, name:"襁褓睡袋", role:"宝宝", cat:"睡眠", emoji:"\u{1F4A4}", qty:2, s:0, e:90, desc:"包裹手臂", what:"睡袋", why:"抑制惊跳", how:"上紧下松", benefit:"延长睡眠", alt:"" },
+    { id:44, name:"恒温水壶+温奶器", role:"宝宝", cat:"喂养", emoji:"\u2668\uFE0F", qty:1, s:0, e:365, desc:"调奶", what:"水壶", why:"精准水温", how:"45℃/70℃", benefit:"冲奶方便", alt:"WHO建议" },
+    { id:45, name:"奶瓶消毒锅", role:"宝宝", cat:"喂养", emoji:"\u{1F9FC}", qty:1, s:0, e:365, desc:"消毒", what:"蒸汽/紫外线", why:"杀菌", how:"每次用后", benefit:"防鹅口疮", alt:"煮沸消毒" },
+    { id:46, name:"维生素D3滴剂", role:"宝宝", cat:"护理", emoji:"\u{1F48A}", qty:1, s:15, e:730, desc:"400IU/日", what:"维生素D", why:"母乳不足", how:"每日1滴", benefit:"钙吸收", alt:"AD滴剂" },
+    { id:47, name:"生理盐水+吸鼻器", role:"宝宝", cat:"护理", emoji:"\u{1F443}", qty:1, s:0, e:180, desc:"通鼻", what:"盐水吸鼻球", why:"鼻塞", how:"滴盐水后吸", benefit:"呼吸顺畅", alt:"" },
+    { id:48, name:"沐浴露+润肤乳+抚触油", role:"宝宝", cat:"护理", emoji:"\u{1F9F4}", qty:1, s:3, e:365, desc:"洗护", what:"弱酸性", why:"清洁保湿", how:"浴后涂抹", benefit:"皮肤屏障", alt:"" },
+    { id:49, name:"婴儿指甲剪", role:"宝宝", cat:"护理", emoji:"\u2702\uFE0F", qty:1, s:0, e:365, desc:"防抓伤", what:"指甲剪", why:"指甲锋利", how:"熟睡修剪", benefit:"安全", alt:"" },
+    { id:50, name:"耳温枪/额温枪", role:"宝宝", cat:"护理", emoji:"\u{1F321}\uFE0F", qty:1, s:0, e:365, desc:"测温", what:"红外体温计", why:"快速监测", how:"轻触", benefit:"安全", alt:"腋温计" },
+    { id:51, name:"黑白卡", role:"宝宝", cat:"早教", emoji:"\u{1F5A4}", qty:1, s:0, e:90, desc:"视觉训练", what:"黑白图案", why:"促进神经", how:"距眼20-30cm", benefit:"智力开发", alt:"" },
+    { id:52, name:"小夜灯", role:"宝宝", cat:"环境", emoji:"\u{1F4A1}", qty:1, s:0, e:365, desc:"低亮度暖光", what:"夜灯", why:"不刺眼", how:"低处照明", benefit:"昼夜节律", alt:"" },
+    { id:53, name:"婴儿洗衣液/皂", role:"宝宝", cat:"清洁", emoji:"\u{1F9FA}", qty:1, s:0, e:365, desc:"无刺激", what:"洗衣液", why:"避免刺激", how:"单独清洗", benefit:"防过敏", alt:"" },
+    { id:54, name:"尿布台", role:"宝宝", cat:"清洁", emoji:"\u{1F4E6}", qty:1, s:0, e:180, desc:"护腰", what:"高台", why:"避免弯腰", how:"安全带使用", benefit:"保护腰椎", alt:"" },
+    { id:100, name:"产后尽早排尿", role:"妈妈", cat:"护理事项", emoji:"\u{1F6B0}", qty:0, s:0, e:1, desc:"4-6h内小便", what:"自主排尿", why:"避免尿潴留", how:"多饮水诱导", benefit:"防出血", alt:"" },
+    { id:101, name:"恶露观察", role:"妈妈", cat:"护理事项", emoji:"\u{1FA78}", qty:0, s:0, e:42, desc:"记录变化", what:"观察恶露", why:"反映恢复", how:"记录颜色量", benefit:"早发现异常", alt:"" },
+    { id:102, name:"生理性胀奶处理", role:"妈妈", cat:"护理事项", emoji:"\u{1F348}", qty:0, s:2, e:7, desc:"乳房肿胀", what:"胀奶", why:"易致乳腺炎", how:"冷敷勤吸", benefit:"缓解", alt:"禁暴力揉" },
+    { id:103, name:"早吸吮早开奶", role:"妈妈", cat:"护理事项", emoji:"\u{1F931}", qty:0, s:0, e:0, desc:"出生1h内", what:"三早", why:"初乳抗体", how:"皮肤接触", benefit:"建立免疫", alt:"" },
+    { id:104, name:"凯格尔运动", role:"妈妈", cat:"护理事项", emoji:"\u{1F9D8}", qty:0, s:1, e:365, desc:"盆底肌训练", what:"缩紧运动", why:"改善漏尿", how:"收紧保持放松", benefit:"盆底康复", alt:"" },
+    { id:105, name:"腹直肌分离自测", role:"妈妈", cat:"护理事项", emoji:"\u{1F4CF}", qty:0, s:7, e:42, desc:"仰卧测量", what:"自测方法", why:"分离导致腰痛", how:"仰卧抬肩探入", benefit:"及时干预", alt:"避免卷腹" },
+    { id:200, name:"卡介苗", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F489}", qty:0, s:0, e:1, desc:"24h内接种", what:"结核疫苗", why:"预防重症结核", how:"左上臂皮内", benefit:"大幅降低风险", alt:"必种" },
+    { id:201, name:"乙肝疫苗①", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F489}", qty:0, s:0, e:1, desc:"24h内", what:"乙肝疫苗", why:"阻断传播", how:"大腿肌注", benefit:"保护率95%", alt:"" },
+    { id:202, name:"足底血筛查", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1FA78}", qty:0, s:2, e:3, desc:"72h后采血", what:"遗传代谢病筛查", why:"早期无症状", how:"足跟采血", benefit:"及时干预", alt:"" },
+    { id:203, name:"听力筛查", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F442}", qty:0, s:2, e:3, desc:"无创测试", what:"听力测试", why:"早发现耳聋", how:"睡眠中测", benefit:"避免聋哑", alt:"" },
+    { id:204, name:"乙肝疫苗②", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F489}", qty:0, s:30, e:30, desc:"满月接种", what:"第二针", why:"完成基础免疫", how:"社区接种", benefit:"保护力提升", alt:"" },
+    { id:205, name:"满月体检", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F4CB}", qty:0, s:28, e:32, desc:"评估发育", what:"体格检查", why:"早发现偏离", how:"社区/儿科", benefit:"健康监测", alt:"" }
+  ];
+
+  const STORAGE_CUSTOM = 'bb_custom_final6';
+  const STORAGE_STATES = 'bb_states_final6';
+  const STORAGE_DAY = 'bb_day_final6';
+  const GIT_CONFIG_KEY = 'gh_config_final6';
+  const AUTO_SYNC_KEY = 'autoSyncEnabled6';
+
+  let customItems = JSON.parse(localStorage.getItem(STORAGE_CUSTOM) || '[]');
+  let itemStates = JSON.parse(localStorage.getItem(STORAGE_STATES) || '{}');
+  let currentDay = parseInt(localStorage.getItem(STORAGE_DAY)) || 0;
+  let ghConfig = JSON.parse(localStorage.getItem(GIT_CONFIG_KEY) || 'null');
+  let autoSyncEnabled = localStorage.getItem(AUTO_SYNC_KEY) !== 'false';
+
+  function saveLocal() {
+    localStorage.setItem(STORAGE_CUSTOM, JSON.stringify(customItems));
+    localStorage.setItem(STORAGE_STATES, JSON.stringify(itemStates));
+    localStorage.setItem(STORAGE_DAY, currentDay);
+  }
+
+  function getState(id) {
+    const def = [...masterLibrary, ...customItems].find(i => i.id == id);
+    const stored = itemStates[id] || {};
+    return {
+      status: stored.status || 'none',
+      qty: stored.qty !== undefined ? stored.qty : (def ? def.qty || 0 : 0),
+      used: stored.used || 0,
+      brand: stored.brand || '',
+      price: stored.price || '',
+      alt: stored.alt !== undefined ? stored.alt : (def ? def.alt || '' : '')
+    };
+  }
+
+  function setState(id, updates) {
+    const current = getState(id);
+    itemStates[id] = { ...current, ...updates };
+    saveLocal();
+    if (ghConfig && autoSyncEnabled) scheduleAutoSync();
+  }
+
+  function allItems() {
+    const skipIds = Object.entries(itemStates).filter(([_, v]) => v.status === 'skip').map(([k]) => k);
+    return [...masterLibrary.filter(i => !skipIds.includes(String(i.id))), ...customItems.filter(i => !skipIds.includes(String(i.id)))];
+  }
+
+  let currentView = 'active';
+  let currentRole = 'all';
+
+  function getFilteredItems() {
+    let items = allItems();
+    if (currentRole !== 'all') items = items.filter(i => i.role === currentRole);
+    if (currentView === 'active') {
+      items = items.filter(i => currentDay >= i.s && currentDay <= i.e);
+      items = items.filter(i => {
+        const st = getState(i.id).status;
+        if (i.cat === '护理事项' || i.cat === '疫苗/检查') return st !== 'done' && st !== 'skip';
+        return st === 'bought' || st === 'packed';
+      });
+    } else if (currentView === 'pending') {
+      items = items.filter(i => currentDay >= i.s && currentDay <= i.e && getState(i.id).status === 'none');
+    } else if (currentView === 'done') {
+      items = items.filter(i => currentDay >= i.s && currentDay <= i.e && (i.cat === '护理事项' || i.cat === '疫苗/检查') && getState(i.id).status === 'done');
+    }
+    return items;
+  }
+
+  function render() {
+    const items = getFilteredItems();
+    const list = document.getElementById('itemList');
+    list.innerHTML = '';
+    if (!items.length) { list.innerHTML = '<div style="text-align:center;padding:24px;color:#b0a090;">✨ 暂无物品</div>'; return; }
+    items.forEach(item => {
+      const state = getState(item.id);
+      const isUrgent = item.cat === '护理事项' || item.cat === '疫苗/检查';
+      const remaining = Math.max(0, state.qty - state.used);
+      const ready = state.status === 'bought' || state.status === 'packed';
+      const card = document.createElement('div');
+      card.className = `item-card${isUrgent ? ' urgent' : ''}${state.status === 'bought' ? ' bought' : ''}${state.status === 'packed' ? ' packed' : ''}`;
+      card.innerHTML = `
+        <div class="item-main" data-id="${item.id}">
+          <div class="item-emoji">${item.emoji}</div>
+          <div class="item-info">
+            <div class="item-title">${item.name} <span class="item-badge">${item.cat}</span></div>
+            <div class="item-desc">${item.desc || ''}</div>
+            <div class="status-actions">
+              ${isUrgent ? `
+                <button class="status-btn ${state.status==='none'?'active-none':''}" data-action="status" data-status="none">未完成</button>
+                <button class="status-btn ${state.status==='done'?'active-done':''}" data-action="status" data-status="done">已完成</button>
+                <button class="status-btn ${state.status==='skip'?'active-skip':''}" data-action="status" data-status="skip">跳过</button>
+              ` : `
+                <button class="status-btn ${state.status==='none'?'active-none':''}" data-action="status" data-status="none">未准备</button>
+                <button class="status-btn ${state.status==='bought'?'active-bought':''}" data-action="status" data-status="bought">已购买</button>
+                <button class="status-btn ${state.status==='packed'?'active-packed':''}" data-action="status" data-status="packed">已打包</button>
+                <button class="status-btn ${state.status==='skip'?'active-skip':''}" data-action="status" data-status="skip">不需</button>
+              `}
+            </div>
+          </div>
+          ${item.qty > 0 ? `
+          <div class="remain-badge ${remaining <= 3 ? 'low' : ''}">
+            📦 ${remaining}/${state.qty}
+            <button class="qty-btn" data-action="use" ${!ready?'disabled':''}>−</button>
+            <button class="qty-btn" data-action="add" ${!ready?'disabled':''}>+</button>
+          </div>` : ''}
+        </div>
+        <div class="detail-panel" id="detail-${item.id}">
+          <div class="detail-grid">
+            <div class="detail-item"><div class="detail-label">是什么</div>${item.what||'—'}</div>
+            <div class="detail-item"><div class="detail-label">为什么</div>${item.why||'—'}</div>
+            <div class="detail-item"><div class="detail-label">怎么使用</div>${item.how||'—'}</div>
+            <div class="detail-item"><div class="detail-label">好处</div>${item.benefit||'—'}</div>
+            <div class="detail-item" style="grid-column:span 2;"><div class="detail-label">规格/备用（可编辑）</div><input id="alt-${item.id}" value="${state.alt}"></div>
+          </div>
+          <div class="brand-row">
+            <input placeholder="品牌" id="brand-${item.id}" value="${state.brand}">
+            <input placeholder="价格" id="price-${item.id}" value="${state.price}">
+            ${item.qty > 0 ? `<input placeholder="总数量" type="number" id="totalQty-${item.id}" value="${state.qty}" min="0" style="width:80px;">` : ''}
+            <button class="status-btn" data-action="saveMeta" data-id="${item.id}">保存修改</button>
+          </div>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+    updateProgress();
+    updateAlert();
+  }
+
+  function updateAlert() {
+    const urgent = allItems().filter(i => (i.cat==='疫苗/检查'||i.cat==='护理事项') && currentDay>=i.s && currentDay<=i.e && getState(i.id).status!=='done' && getState(i.id).status!=='skip');
+    const lowStock = allItems().filter(i => currentDay>=i.s && currentDay<=i.e && (i.cat!=='护理事项' && i.cat!=='疫苗/检查') && ['bought','packed'].includes(getState(i.id).status) && (getState(i.id).qty - getState(i.id).used) <= 3 && getState(i.id).qty > 0);
+    let html = '';
+    if (urgent.length) html += `<div>✅ 今日提醒：${urgent.map(i=>i.name).join('、')}</div>`;
+    if (lowStock.length) html += `<div>⚠️ 物品不足：${lowStock.map(i=>`${i.name}(剩${Math.max(0,getState(i.id).qty-getState(i.id).used)}/${getState(i.id).qty})`).join('、')}</div>`;
+    document.getElementById('alertText').innerHTML = html || '<div>📭 今日无特殊提醒</div>';
+  }
+
+  function updateProgress() {
+    const items = getFilteredItems().filter(i => i.cat !== '护理事项' && i.cat !== '疫苗/检查');
+    const total = items.length;
+    const done = items.filter(i => ['bought','packed'].includes(getState(i.id).status)).length;
+    const pct = total ? Math.round((done/total)*100) : 0;
+    document.getElementById('progressFill').style.width = pct+'%';
+    document.getElementById('progressText').textContent = `${pct}% 已备 (${done}/${total})`;
+  }
+
+  // 事件委托
+  document.getElementById('itemList').addEventListener('click', e => {
+    const target = e.target;
+    const main = target.closest('.item-main');
+    if (main && !target.closest('button') && !target.closest('input')) {
+      document.getElementById(`detail-${main.dataset.id}`)?.classList.toggle('open');
+      return;
+    }
+    const btn = target.closest('button');
+    if (!btn) return;
+    const id = btn.closest('[data-id]')?.dataset.id;
+    if (!id) return;
+    if (btn.dataset.action === 'status') { setState(id, { status: btn.dataset.status }); render(); }
+    else if (btn.dataset.action === 'use') { const st = getState(id); setState(id, { used: Math.min(st.qty, (st.used||0)+1) }); render(); }
+    else if (btn.dataset.action === 'add') { const st = getState(id); setState(id, { used: Math.max(0, (st.used||0)-1) }); render(); }
+    else if (btn.dataset.action === 'saveMeta') {
+      const brand = document.getElementById(`brand-${id}`)?.value || '';
+      const price = document.getElementById(`price-${id}`)?.value || '';
+      const alt = document.getElementById(`alt-${id}`)?.value || '';
+      const totalQtyEl = document.getElementById(`totalQty-${id}`);
+      const update = { brand, price, alt };
+      if (totalQtyEl) update.qty = parseInt(totalQtyEl.value) || 0;
+      setState(id, update);
+      render();
+      showToast('已保存');
+    }
+  });
+
+  // 天数与阶段
+  document.getElementById('dayInput').addEventListener('change', () => { currentDay = parseInt(document.getElementById('dayInput').value) || 0; saveLocal(); updateStage(); render(); });
+  document.getElementById('quickStages').addEventListener('click', e => {
+    const dot = e.target.closest('.stage-dot');
+    if (!dot) return;
+    currentDay = parseInt(dot.dataset.days);
+    document.getElementById('dayInput').value = currentDay;
+    saveLocal(); updateStage(); render();
+    document.querySelectorAll('.stage-dot').forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+  });
+
+  function updateStage() {
+    const label = document.getElementById('stageLabel');
+    label.textContent = currentDay < 0 ? '🤰 待产期' : (currentDay <= 3 ? '🏥 住院期间' : (currentDay <= 30 ? '🏠 回家~满月' : '👶 满月后'));
+  }
+
+  // 视图与筛选
+  document.querySelector('.view-row').addEventListener('click', e => {
+    const btn = e.target.closest('.view-btn');
+    if (!btn) return;
+    currentView = btn.dataset.view;
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  });
+  document.querySelector('.filter-row').addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip');
+    if (!chip) return;
+    currentRole = chip.dataset.role;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    render();
+  });
+
+  // 手动添加弹窗
+  document.getElementById('addItemBtn').addEventListener('click', () => { document.getElementById('manualModal').style.display = 'flex'; });
+  document.getElementById('manualClose').addEventListener('click', () => { document.getElementById('manualModal').style.display = 'none'; });
+  document.getElementById('manualSave').addEventListener('click', () => {
+    const name = document.getElementById('mName').value.trim();
+    if (!name) return showToast('名称必填');
+    if (allItems().some(i => i.name === name)) return showToast('物品已存在');
+    customItems.push({
+      id: Date.now(), name,
+      role: document.getElementById('mRole').value,
+      cat: document.getElementById('mCat').value || '其他',
+      emoji: '📦', qty: 0,
+      s: parseInt(document.getElementById('mStart').value)||0,
+      e: parseInt(document.getElementById('mEnd').value)||30,
+      desc: document.getElementById('mDesc').value,
+      what: document.getElementById('mWhat').value,
+      why: document.getElementById('mWhy').value,
+      how: document.getElementById('mHow').value,
+      benefit: document.getElementById('mBenefit').value,
+      alt: document.getElementById('mAlt').value
+    });
+    saveLocal();
+    document.getElementById('manualModal').style.display = 'none';
+    render(); updateAlert(); showToast('已添加');
+  });
+
+  // 搜索填充
+  document.getElementById('searchItemBtn').addEventListener('click', () => {
+    const name = document.getElementById('searchName').value.trim();
+    if (!name) return showToast('请输入名称');
+    const found = [...masterLibrary, ...customItems].find(i => i.name === name) || [...masterLibrary, ...customItems].find(i => i.name.includes(name));
+    if (found) {
+      document.getElementById('mName').value = found.name;
+      document.getElementById('mRole').value = found.role;
+      document.getElementById('mCat').value = found.cat || '';
+      document.getElementById('mStart').value = found.s || 0;
+      document.getElementById('mEnd').value = found.e || 30;
+      document.getElementById('mDesc').value = found.desc || '';
+      document.getElementById('mWhat').value = found.what || '';
+      document.getElementById('mWhy').value = found.why || '';
+      document.getElementById('mHow').value = found.how || '';
+      document.getElementById('mBenefit').value = found.benefit || '';
+      document.getElementById('mAlt').value = found.alt || '';
+      showToast(`已填充“${found.name}”`);
+    } else showToast('未找到');
+  });
+  document.getElementById('jdSearchBtn').addEventListener('click', () => { const name = document.getElementById('searchName').value.trim(); if(name) window.open(`https://search.jd.com/Search?keyword=${encodeURIComponent(name)}`); });
+  document.getElementById('taobaoSearchBtn').addEventListener('click', () => { const name = document.getElementById('searchName').value.trim(); if(name) window.open(`https://s.taobao.com/search?q=${encodeURIComponent(name)}`); });
+  document.getElementById('clipboardBtn').addEventListener('click', async () => { try { const text = await navigator.clipboard.readText(); document.getElementById('mName').value = text.split(/[\s,]+/)[0] || ''; document.getElementById('mDesc').value = text.slice(0,50); showToast('已识别剪切板'); } catch { showToast('无法读取剪切板'); } });
+
+  // 物品库
+  document.getElementById('openLibraryBtn').addEventListener('click', () => { document.getElementById('libraryModal').style.display = 'flex'; renderLibrary(); });
+  document.getElementById('libraryClose').addEventListener('click', () => { document.getElementById('libraryModal').style.display = 'none'; });
+  document.getElementById('libSearch').addEventListener('input', renderLibrary);
+  document.getElementById('libRoleFilter').addEventListener('change', renderLibrary);
+  document.getElementById('libraryList').addEventListener('click', e => {
+    if (e.target.tagName === 'BUTTON' && e.target.dataset.libname) {
+      const name = e.target.dataset.libname;
+      const item = masterLibrary.find(i => i.name === name);
+      if (item && !allItems().some(i => i.name === name)) {
+        customItems.push({...item, id: Date.now()});
+        saveLocal(); render(); updateAlert(); showToast(`已添加 ${name}`);
+      } else showToast('物品已存在');
+    }
+  });
+
+  function renderLibrary() {
+    const search = document.getElementById('libSearch').value.toLowerCase();
+    const role = document.getElementById('libRoleFilter').value;
+    const existing = allItems().map(i => i.name);
+    let items = masterLibrary.filter(i => !existing.includes(i.name));
+    if (role !== 'all') items = items.filter(i => i.role === role);
+    if (search) items = items.filter(i => i.name.toLowerCase().includes(search) || (i.desc||'').includes(search));
+    document.getElementById('libraryList').innerHTML = items.length ? items.map(i => `
+      <div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #eee;">
+        <span>${i.emoji} ${i.name} (${i.role}·${i.cat})</span>
+        <button class="status-btn" data-libname="${i.name}">添加</button>
+      </div>
+    `).join('') : '<p style="text-align:center;padding:20px;">没有可添加的物品</p>';
+  }
+
+  // ========== 修复同步不一致的核心代码 ==========
+  async function uploadToGitHub() {
+    if (!ghConfig) return false;
+    try {
+      const match = ghConfig.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+      if (!match) throw new Error('Invalid URL');
+      const [_, owner, repo] = match;
+      // 上传时不仅保存状态，也保存自定义物品列表（用于恢复）
+      const payload = {
+        customItems: customItems,
+        itemStates: itemStates,
+        currentDay: currentDay
+      };
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      const existing = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}`, {
+        headers: { Authorization: `token ${ghConfig.token}` }
+      }).then(r => r.json()).catch(() => null);
+      const sha = existing ? existing.sha : '';
+      await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `token ${ghConfig.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: 'update checklist', content, sha })
+      });
+      return true;
+    } catch (e) { console.error(e); return false; }
+  }
+
+  async function downloadFromGitHub() {
+    if (!ghConfig) return false;
+    try {
+      const match = ghConfig.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+      if (!match) throw new Error('Invalid URL');
+      const [_, owner, repo] = match;
+      const data = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}`, {
+        headers: { Authorization: `token ${ghConfig.token}` }
+      }).then(r => r.json());
+      if (data.content) {
+        const json = JSON.parse(atob(data.content));
+        // 完全用云端数据覆盖本地，保证状态一致
+        customItems = json.customItems || [];
+        itemStates = json.itemStates || {};
+        currentDay = json.currentDay || 0;
+        saveLocal();
+        return true;
+      }
+    } catch (e) { console.error(e); }
+    return false;
+  }
+
+  let autoSyncTimer;
+  function scheduleAutoSync() {
+    if (!ghConfig || !autoSyncEnabled) return;
+    clearTimeout(autoSyncTimer);
+    autoSyncTimer = setTimeout(async () => {
+      const ok = await uploadToGitHub();
+      if (ok) {
+        const now = new Date();
+        document.getElementById('syncStatus').textContent = `☁️ 已自动同步 ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+      }
+    }, 2000);
+  }
+
+  // 自动同步开关
+  const autoSyncToggle = document.getElementById('autoSyncToggle');
+  autoSyncToggle.classList.toggle('active', autoSyncEnabled);
+  autoSyncToggle.addEventListener('click', () => {
+    autoSyncEnabled = !autoSyncEnabled;
+    localStorage.setItem(AUTO_SYNC_KEY, autoSyncEnabled);
+    autoSyncToggle.classList.toggle('active', autoSyncEnabled);
+    document.getElementById('syncStatus').textContent = autoSyncEnabled ? '☁️ 自动同步已开启' : '🔒 自动同步已关闭';
+    if (autoSyncEnabled) scheduleAutoSync();
+  });
+
+  // 按钮事件（未配置时弹出设置，自动填充令牌）
+  document.getElementById('uploadBtn').addEventListener('click', async function() {
+    if (!ghConfig) {
+      document.getElementById('syncModal').style.display = 'flex';
+      document.getElementById('repoUrl').value = 'https://github.com/july-begins/baby-checklist';
+      document.getElementById('repoToken').value = ghConfig?.token || '';
+      return;
+    }
+    showToast('正在同步到云端...');
+    const ok = await uploadToGitHub();
+    showToast(ok ? '已同步' : '同步失败');
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', async function() {
+    if (!ghConfig) {
+      document.getElementById('syncModal').style.display = 'flex';
+      document.getElementById('repoUrl').value = 'https://github.com/july-begins/baby-checklist';
+      document.getElementById('repoToken').value = ghConfig?.token || '';
+      return;
+    }
+    showToast('正在从云端同步...');
+    const ok = await downloadFromGitHub();
+    if (ok) { document.getElementById('dayInput').value = currentDay; render(); updateAlert(); }
+    showToast(ok ? '已更新' : '下载失败');
+  });
+
+  // 云同步设置弹窗
+  document.getElementById('syncSaveBtn').addEventListener('click', () => {
+    const url = document.getElementById('repoUrl').value.trim();
+    const token = document.getElementById('repoToken').value.trim();
+    if (!url || !token) return showToast('请完整填写');
+    ghConfig = { url, token, path: 'data.json' };
+    localStorage.setItem(GIT_CONFIG_KEY, JSON.stringify(ghConfig));
+    document.getElementById('syncModal').style.display = 'none';
+    showToast('配置已保存');
+    document.getElementById('syncStatus').textContent = '☁️ 已配置';
+  });
+  document.getElementById('testConnBtn').addEventListener('click', async () => {
+    const url = document.getElementById('repoUrl').value.trim();
+    const token = document.getElementById('repoToken').value.trim();
+    if (!url || !token) return showToast('请完整填写');
+    const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+    if (!match) return showToast('仓库地址格式不正确');
+    showToast('测试中...');
+    try {
+      const res = await fetch(`https://api.github.com/repos/${match[1]}/${match[2]}/contents/data.json`, {
+        headers: { Authorization: `token ${token}` }
+      });
+      showToast(res.ok ? '连接成功' : '连接失败，请检查令牌权限');
+    } catch (e) { showToast('网络错误'); }
+  });
+  document.getElementById('syncCloseBtn').addEventListener('click', () => { document.getElementById('syncModal').style.display = 'none'; });
+
+  // 导入导出
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify({ customItems, itemStates, currentDay })], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '待产包备份.json'; a.click();
+    showToast('备份文件已下载');
+  });
+  document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFileInput').click());
+  document.getElementById('importFileInput').addEventListener('change', e => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        customItems = data.customItems; itemStates = data.itemStates; currentDay = data.currentDay;
+        saveLocal(); document.getElementById('dayInput').value = currentDay; render(); updateAlert();
+        showToast('已恢复备份');
+      } catch { showToast('无效文件'); }
+    };
+    reader.readAsText(file);
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // 初始化
+  document.getElementById('dayInput').value = currentDay;
+  updateStage();
+  render();
+  updateAlert();
+  if (ghConfig) {
+    document.getElementById('syncStatus').textContent = autoSyncEnabled ? '☁️ 已配置，修改后自动同步' : '🔒 自动同步已关闭';
+  }
+})();
+</script>
+</body>
+</html>
