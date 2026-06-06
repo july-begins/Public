@@ -11,11 +11,15 @@
     .header h1 { font-size: 1.8rem; color: #b08968; }
     .header p { color: #8b7355; font-size: 0.9rem; }
 
-    .sync-controls { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; }
+    .sync-controls { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; align-items: center; }
     .btn { padding: 10px 18px; border-radius: 24px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-primary { background: #b08968; color: white; }
     .btn-outline { background: #fff; color: #b08968; border: 2px solid #b08968; }
+    .btn-small { padding: 6px 12px; font-size: 0.75rem; }
     .sync-status { font-size: 0.8rem; text-align: center; margin: 6px 0 12px; color: #8b7355; }
+
+    .toggle-sync { background: #f0e5d8; border: none; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
+    .toggle-sync.active { background: #b08968; color: white; }
 
     .timeline-bar { background: #fff; border-radius: 24px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .day-input { width: 75px; padding: 10px; border-radius: 16px; border: 2px solid #ddc; text-align: center; font-size: 1.1rem; font-weight: 700; color: #b08968; }
@@ -78,6 +82,7 @@
   <button class="btn btn-outline" id="downloadBtn">⬇️ 同步到本地</button>
   <button class="btn btn-outline" id="exportBtn">💾 本地备份</button>
   <button class="btn btn-outline" id="importBtn">📂 恢复备份</button>
+  <button class="toggle-sync active" id="autoSyncToggle">🔄 自动同步</button>
 </div>
 <div class="sync-status" id="syncStatus">☁️ 未配置云同步</div>
 <input type="file" id="importFileInput" accept=".json" style="display:none;">
@@ -245,15 +250,17 @@
     { id:205, name:"满月体检", role:"宝宝", cat:"疫苗/检查", emoji:"📋", qty:0, s:28, e:32, desc:"评估发育", what:"体格检查", why:"早发现偏离", how:"社区/儿科", benefit:"健康监测", alt:"" }
   ];
 
-  const STORAGE_CUSTOM = 'bb_custom_final';
-  const STORAGE_STATES = 'bb_states_final';
-  const STORAGE_DAY = 'bb_day_final';
-  const GIT_CONFIG_KEY = 'gh_config_final';
+  const STORAGE_CUSTOM = 'bb_custom_final2';
+  const STORAGE_STATES = 'bb_states_final2';
+  const STORAGE_DAY = 'bb_day_final2';
+  const GIT_CONFIG_KEY = 'gh_config_final2';
+  const AUTO_SYNC_KEY = 'autoSyncEnabled';
 
   let customItems = JSON.parse(localStorage.getItem(STORAGE_CUSTOM) || '[]');
   let itemStates = JSON.parse(localStorage.getItem(STORAGE_STATES) || '{}');
   let currentDay = parseInt(localStorage.getItem(STORAGE_DAY)) || 0;
   let ghConfig = JSON.parse(localStorage.getItem(GIT_CONFIG_KEY) || 'null');
+  let autoSyncEnabled = localStorage.getItem(AUTO_SYNC_KEY) !== 'false'; // 默认开启
 
   function saveLocal() {
     localStorage.setItem(STORAGE_CUSTOM, JSON.stringify(customItems));
@@ -278,7 +285,7 @@
     const current = getState(id);
     itemStates[id] = { ...current, ...updates };
     saveLocal();
-    if (ghConfig) scheduleAutoSync();
+    if (ghConfig && autoSyncEnabled) scheduleAutoSync();
   }
 
   function allItems() {
@@ -576,12 +583,27 @@
 
   let autoSyncTimer;
   function scheduleAutoSync() {
-    if (!ghConfig) return;
+    if (!ghConfig || !autoSyncEnabled) return;
     clearTimeout(autoSyncTimer);
     autoSyncTimer = setTimeout(async () => {
-      await uploadToGitHub();
+      const ok = await uploadToGitHub();
+      if (ok) {
+        const now = new Date();
+        document.getElementById('syncStatus').textContent = `☁️ 已自动同步 ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+      }
     }, 2000);
   }
+
+  // 自动同步开关
+  const autoSyncToggle = document.getElementById('autoSyncToggle');
+  autoSyncToggle.classList.toggle('active', autoSyncEnabled);
+  autoSyncToggle.addEventListener('click', () => {
+    autoSyncEnabled = !autoSyncEnabled;
+    localStorage.setItem(AUTO_SYNC_KEY, autoSyncEnabled);
+    autoSyncToggle.classList.toggle('active', autoSyncEnabled);
+    document.getElementById('syncStatus').textContent = autoSyncEnabled ? '☁️ 自动同步已开启' : '🔒 自动同步已关闭';
+    if (autoSyncEnabled) scheduleAutoSync();
+  });
 
   // 按钮事件
   document.getElementById('uploadBtn').addEventListener('click', async () => {
@@ -659,7 +681,7 @@
   render();
   updateAlert();
   if (ghConfig) {
-    document.getElementById('syncStatus').textContent = '☁️ 已配置，修改后自动同步';
+    document.getElementById('syncStatus').textContent = autoSyncEnabled ? '☁️ 已配置，修改后自动同步' : '🔒 自动同步已关闭';
   }
 })();
 </script>
