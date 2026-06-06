@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>待产包 & 新生儿护理 · 最终版</title>
   <style>
-    /* 样式与之前相同，省略以节省篇幅，请复制之前完整版 CSS */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #faf7f2; color: #3e362e; padding: 12px; max-width: 750px; margin: 0 auto; }
     .header { text-align: center; margin: 10px 0 16px; }
@@ -187,7 +186,7 @@
 
 <script>
 (function() {
-  // 完整物品库（Unicode 转义避免乱码）
+  // 完整物品库 (Unicode 转义)
   const masterLibrary = [
     { id:1, name:"产褥垫", role:"妈妈", cat:"卫生", emoji:"\u{1F6CF}", qty:15, s:-3, e:5, desc:"60×90cm一次性防水垫", what:"一次性防水垫巾", why:"防止羊水恶露污染", how:"平铺臀下脏即换", benefit:"方便卫生", alt:"子初/十月结晶" },
     { id:2, name:"产妇卫生巾", role:"妈妈", cat:"卫生", emoji:"\u{1FA79}", qty:10, s:0, e:7, desc:"L/XL加大吸收", what:"加大卫生巾", why:"准确评估出血量", how:"每2-3h更换", benefit:"干爽不侧漏", alt:"安心裤" },
@@ -284,13 +283,23 @@
   function setState(id, updates) {
     const current = getState(id);
     itemStates[id] = { ...current, ...updates };
+    // 彻底清除被跳过的物品
+    if (updates.status === 'skip') {
+      // 从 customItems 中移除（如果是自定义添加的）
+      customItems = customItems.filter(i => i.id != id);
+      // 删除 itemStates 中的条目
+      delete itemStates[id];
+    }
     saveLocal();
     if (ghConfig && autoSyncEnabled) scheduleAutoSync();
   }
 
   function allItems() {
+    // 移除所有被标记为 skip 的物品条目
     const skipIds = Object.entries(itemStates).filter(([_, v]) => v.status === 'skip').map(([k]) => k);
-    return [...masterLibrary.filter(i => !skipIds.includes(String(i.id))), ...customItems.filter(i => !skipIds.includes(String(i.id)))];
+    const activeMaster = masterLibrary.filter(i => !skipIds.includes(String(i.id)));
+    const activeCustom = customItems.filter(i => !skipIds.includes(String(i.id)));
+    return [...activeMaster, ...activeCustom];
   }
 
   let currentView = 'active';
@@ -536,20 +545,14 @@
     `).join('') : '<p style="text-align:center;padding:20px;">没有可添加的物品</p>';
   }
 
-  // ========== 修复同步不一致的核心代码 ==========
+  // GitHub 同步函数
   async function uploadToGitHub() {
     if (!ghConfig) return false;
     try {
       const match = ghConfig.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
       if (!match) throw new Error('Invalid URL');
       const [_, owner, repo] = match;
-      // 上传时不仅保存状态，也保存自定义物品列表（用于恢复）
-      const payload = {
-        customItems: customItems,
-        itemStates: itemStates,
-        currentDay: currentDay
-      };
-      const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify({ customItems, itemStates, currentDay }))));
       const existing = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}`, {
         headers: { Authorization: `token ${ghConfig.token}` }
       }).then(r => r.json()).catch(() => null);
@@ -577,9 +580,15 @@
       }).then(r => r.json());
       if (data.content) {
         const json = JSON.parse(atob(data.content));
-        // 完全用云端数据覆盖本地，保证状态一致
         customItems = json.customItems || [];
         itemStates = json.itemStates || {};
+        // 清理掉所有状态为 skip 的条目，确保不会残留
+        Object.keys(itemStates).forEach(id => {
+          if (itemStates[id].status === 'skip') {
+            delete itemStates[id];
+          }
+        });
+        customItems = customItems.filter(i => !(itemStates[i.id]?.status === 'skip'));
         currentDay = json.currentDay || 0;
         saveLocal();
         return true;
@@ -612,7 +621,7 @@
     if (autoSyncEnabled) scheduleAutoSync();
   });
 
-  // 按钮事件（未配置时弹出设置，自动填充令牌）
+  // 按钮事件
   document.getElementById('uploadBtn').addEventListener('click', async function() {
     if (!ghConfig) {
       document.getElementById('syncModal').style.display = 'flex';
