@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>待产包 & 新生儿护理 · 最终完美版</title>
+  <title>待产包 & 新生儿护理 · 终极稳定版</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background:#faf7f2; color:#3e362e; padding:12px; max-width:750px; margin:0 auto; }
@@ -74,7 +74,7 @@
   </style>
 </head>
 <body>
-<div class="header"><h1>🤰🏻 待产包 & 护理清单 👶🏻</h1><p>智能时间线 · GitHub 自动同步</p></div>
+<div class="header"><h1>🤰🏻 待产包 & 护理清单 👶🏻</h1><p>智能时间线 · GitHub 轻量同步</p></div>
 
 <div class="sync-controls">
   <button class="btn btn-outline" id="uploadBtn">⬆️ 同步到云端</button>
@@ -126,7 +126,7 @@
 <div class="item-list" id="itemList"></div>
 <div class="toast" id="toast"></div>
 
-<!-- 云同步设置弹窗 -->
+<!-- 弹窗保持简洁，与之前相同 -->
 <div class="modal-overlay" id="syncModal">
   <div class="modal">
     <h3>☁️ GitHub 云同步设置</h3>
@@ -142,7 +142,6 @@
   </div>
 </div>
 
-<!-- 手动添加弹窗 -->
 <div class="modal-overlay" id="manualModal">
   <div class="modal">
     <h3>➕ 添加物品</h3>
@@ -171,7 +170,6 @@
   </div>
 </div>
 
-<!-- 物品库弹窗 -->
 <div class="modal-overlay" id="libraryModal">
   <div class="modal">
     <h3>📚 物品库</h3>
@@ -186,6 +184,7 @@
 
 <script>
 (function() {
+  // 完整物品库 (静态，不参与同步)
   const masterLibrary = [
     { id:1, name:"产褥垫", role:"妈妈", cat:"卫生", emoji:"\u{1F6CF}", qty:15, s:-3, e:5, desc:"60×90cm一次性防水垫", what:"一次性防水垫巾", why:"防止羊水恶露污染", how:"平铺臀下脏即换", benefit:"方便卫生", alt:"子初/十月结晶" },
     { id:2, name:"产妇卫生巾", role:"妈妈", cat:"卫生", emoji:"\u{1FA79}", qty:10, s:0, e:7, desc:"L/XL加大吸收", what:"加大卫生巾", why:"准确评估出血量", how:"每2-3h更换", benefit:"干爽不侧漏", alt:"安心裤" },
@@ -248,11 +247,12 @@
     { id:205, name:"满月体检", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F4CB}", qty:0, s:28, e:32, desc:"评估发育", what:"体格检查", why:"早发现偏离", how:"社区/儿科", benefit:"健康监测", alt:"" }
   ];
 
-  const STORAGE_CUSTOM = 'bb_custom_v10';
-  const STORAGE_STATES = 'bb_states_v10';
-  const STORAGE_DAY = 'bb_day_v10';
-  const GIT_CONFIG_KEY = 'gh_config_v10';
-  const AUTO_SYNC_KEY = 'autoSync_v10';
+  // 只同步状态和自定义物品
+  const STORAGE_CUSTOM = 'bb_custom_v6';
+  const STORAGE_STATES = 'bb_states_v6';
+  const STORAGE_DAY = 'bb_day_v6';
+  const GIT_CONFIG_KEY = 'gh_config_v6';
+  const AUTO_SYNC_KEY = 'autoSync_v6';
 
   let customItems = JSON.parse(localStorage.getItem(STORAGE_CUSTOM) || '[]');
   let itemStates = JSON.parse(localStorage.getItem(STORAGE_STATES) || '{}');
@@ -264,6 +264,8 @@
     localStorage.setItem(STORAGE_CUSTOM, JSON.stringify(customItems));
     localStorage.setItem(STORAGE_STATES, JSON.stringify(itemStates));
     localStorage.setItem(STORAGE_DAY, currentDay);
+    localStorage.setItem(AUTO_SYNC_KEY, autoSyncEnabled);
+    if (ghConfig) localStorage.setItem(GIT_CONFIG_KEY, JSON.stringify(ghConfig));
   }
 
   function getState(id) {
@@ -281,25 +283,16 @@
 
   function setState(id, updates) {
     const current = getState(id);
-    itemStates[id] = { ...current, ...updates };
-    // 对于实体物品，当标记为“不需”时，只保留状态为 skip，不删除记录（以便物品库正确识别）
-    // 对于护理事项/疫苗，跳过也是类似处理
+    const newState = { ...current, ...updates };
+    itemStates[id] = newState;
     saveLocal();
-    // 如果物品库弹窗当前打开，实时刷新
-    if (document.getElementById('libraryModal').style.display === 'flex') {
-      renderLibrary();
-    }
+    if (document.getElementById('libraryModal').style.display === 'flex') renderLibrary();
     if (ghConfig && autoSyncEnabled) scheduleAutoSync();
   }
 
   function allItems() {
-    const skipIds = new Set();
-    for (const [id, state] of Object.entries(itemStates)) {
-      if (state.status === 'skip') skipIds.add(id);
-    }
-    const activeMaster = masterLibrary.filter(i => !skipIds.has(String(i.id)));
-    const activeCustom = customItems.filter(i => !skipIds.has(String(i.id)));
-    return [...activeMaster, ...activeCustom];
+    const skipIds = new Set(Object.keys(itemStates).filter(id => itemStates[id] && itemStates[id].status === 'skip'));
+    return [...masterLibrary.filter(i => !skipIds.has(String(i.id))), ...customItems.filter(i => !skipIds.has(String(i.id)))];
   }
 
   let currentView = 'active';
@@ -343,22 +336,22 @@
             <div class="item-desc">${item.desc || ''}</div>
             <div class="status-actions">
               ${isUrgent ? `
-                <button class="status-btn ${state.status==='none'?'active-none':''}" data-action="status" data-status="none">未完成</button>
-                <button class="status-btn ${state.status==='done'?'active-done':''}" data-action="status" data-status="done">已完成</button>
-                <button class="status-btn ${state.status==='skip'?'active-skip':''}" data-action="status" data-status="skip">跳过</button>
+                <button class="status-btn ${state.status==='none'?'active-none':''}" data-action="status" data-id="${item.id}" data-status="none">未完成</button>
+                <button class="status-btn ${state.status==='done'?'active-done':''}" data-action="status" data-id="${item.id}" data-status="done">已完成</button>
+                <button class="status-btn ${state.status==='skip'?'active-skip':''}" data-action="status" data-id="${item.id}" data-status="skip">跳过</button>
               ` : `
-                <button class="status-btn ${state.status==='none'?'active-none':''}" data-action="status" data-status="none">未准备</button>
-                <button class="status-btn ${state.status==='bought'?'active-bought':''}" data-action="status" data-status="bought">已购买</button>
-                <button class="status-btn ${state.status==='packed'?'active-packed':''}" data-action="status" data-status="packed">已打包</button>
-                <button class="status-btn ${state.status==='skip'?'active-skip':''}" data-action="status" data-status="skip">不需</button>
+                <button class="status-btn ${state.status==='none'?'active-none':''}" data-action="status" data-id="${item.id}" data-status="none">未准备</button>
+                <button class="status-btn ${state.status==='bought'?'active-bought':''}" data-action="status" data-id="${item.id}" data-status="bought">已购买</button>
+                <button class="status-btn ${state.status==='packed'?'active-packed':''}" data-action="status" data-id="${item.id}" data-status="packed">已打包</button>
+                <button class="status-btn ${state.status==='skip'?'active-skip':''}" data-action="status" data-id="${item.id}" data-status="skip">不需</button>
               `}
             </div>
           </div>
           ${item.qty > 0 ? `
           <div class="remain-badge ${remaining <= 3 ? 'low' : ''}">
             📦 ${remaining}/${state.qty}
-            <button class="qty-btn" data-action="use" ${!ready?'disabled':''}>−</button>
-            <button class="qty-btn" data-action="add" ${!ready?'disabled':''}>+</button>
+            <button class="qty-btn" data-action="use" data-id="${item.id}" ${!ready?'disabled':''}>−</button>
+            <button class="qty-btn" data-action="add" data-id="${item.id}" ${!ready?'disabled':''}>+</button>
           </div>` : ''}
         </div>
         <div class="detail-panel" id="detail-${item.id}">
@@ -401,22 +394,28 @@
     document.getElementById('progressText').textContent = `${pct}% 已备 (${done}/${total})`;
   }
 
-  // 事件委托
-  document.getElementById('itemList').addEventListener('click', e => {
-    const target = e.target;
-    const main = target.closest('.item-main');
-    if (main && !target.closest('button') && !target.closest('input')) {
-      document.getElementById(`detail-${main.dataset.id}`)?.classList.toggle('open');
+  // 全局事件监听
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    if (btn.dataset.action === 'status') {
+      const id = btn.dataset.id;
+      const status = btn.dataset.status;
+      setState(id, { status });
+      render();
       return;
     }
-    const btn = target.closest('button');
-    if (!btn) return;
-    const id = btn.closest('[data-id]')?.dataset.id;
-    if (!id) return;
-    if (btn.dataset.action === 'status') { setState(id, { status: btn.dataset.status }); render(); }
-    else if (btn.dataset.action === 'use') { const st = getState(id); setState(id, { used: Math.min(st.qty, (st.used||0)+1) }); render(); }
-    else if (btn.dataset.action === 'add') { const st = getState(id); setState(id, { used: Math.max(0, (st.used||0)-1) }); render(); }
-    else if (btn.dataset.action === 'saveMeta') {
+    if (btn.dataset.action === 'use' || btn.dataset.action === 'add') {
+      const id = btn.dataset.id;
+      const st = getState(id);
+      if (btn.dataset.action === 'use') setState(id, { used: Math.min(st.qty, (st.used||0)+1) });
+      else setState(id, { used: Math.max(0, (st.used||0)-1) });
+      render();
+      return;
+    }
+    if (btn.dataset.action === 'saveMeta') {
+      const id = btn.dataset.id;
       const brand = document.getElementById(`brand-${id}`)?.value || '';
       const price = document.getElementById(`price-${id}`)?.value || '';
       const alt = document.getElementById(`alt-${id}`)?.value || '';
@@ -426,10 +425,73 @@
       setState(id, update);
       render();
       showToast('已保存');
+      return;
+    }
+
+    // 弹窗与同步按钮
+    if (btn.id === 'addItemBtn') { document.getElementById('manualModal').style.display = 'flex'; return; }
+    if (btn.id === 'openLibraryBtn') { document.getElementById('libraryModal').style.display = 'flex'; renderLibrary(); return; }
+    if (btn.id === 'manualClose') { document.getElementById('manualModal').style.display = 'none'; return; }
+    if (btn.id === 'libraryClose') { document.getElementById('libraryModal').style.display = 'none'; return; }
+
+    if (btn.id === 'uploadBtn') {
+      if (!ghConfig) { document.getElementById('syncModal').style.display = 'flex'; return; }
+      showToast('正在同步...');
+      uploadToGitHub().then(ok => showToast(ok ? '已同步' : '同步失败，请检查网络'));
+      return;
+    }
+    if (btn.id === 'downloadBtn') {
+      if (!ghConfig) { document.getElementById('syncModal').style.display = 'flex'; return; }
+      showToast('正在下载...');
+      downloadFromGitHub().then(ok => {
+        if (ok) { document.getElementById('dayInput').value = currentDay; render(); updateAlert(); }
+        showToast(ok ? '已更新' : '下载失败，请检查网络');
+      });
+      return;
+    }
+
+    if (btn.id === 'syncSaveBtn') {
+      const url = document.getElementById('repoUrl').value.trim();
+      const token = document.getElementById('repoToken').value.trim();
+      if (!url || !token) return showToast('请完整填写');
+      ghConfig = { url, token, path: 'data.json' };
+      localStorage.setItem(GIT_CONFIG_KEY, JSON.stringify(ghConfig));
+      document.getElementById('syncModal').style.display = 'none';
+      showToast('配置已保存');
+      return;
+    }
+    if (btn.id === 'testConnBtn') {
+      const url = document.getElementById('repoUrl').value.trim();
+      const token = document.getElementById('repoToken').value.trim();
+      if (!url || !token) return showToast('请完整填写');
+      const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+      if (!match) return showToast('仓库地址格式不正确');
+      showToast('测试中...');
+      fetch(`https://api.github.com/repos/${match[1]}/${match[2]}/contents/data.json?t=${Date.now()}`, {
+        headers: { Authorization: `token ${token}` }, cache: 'no-store'
+      }).then(res => showToast(res.ok ? '连接成功' : '连接失败'));
+      return;
+    }
+    if (btn.id === 'syncCloseBtn') { document.getElementById('syncModal').style.display = 'none'; return; }
+
+    if (btn.id === 'exportBtn') {
+      const blob = new Blob([JSON.stringify({ customItems, itemStates, currentDay })], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '待产包备份.json'; a.click();
+      return;
+    }
+    if (btn.id === 'importBtn') { document.getElementById('importFileInput').click(); return; }
+
+    if (btn.id === 'autoSyncToggle') {
+      autoSyncEnabled = !autoSyncEnabled;
+      btn.classList.toggle('active', autoSyncEnabled);
+      localStorage.setItem(AUTO_SYNC_KEY, autoSyncEnabled);
+      document.getElementById('syncStatus').textContent = autoSyncEnabled ? '☁️ 自动同步已开启' : '🔒 自动同步已关闭';
+      if (autoSyncEnabled) scheduleAutoSync();
+      return;
     }
   });
 
-  // 天数与阶段
+  // 其他事件监听
   document.getElementById('dayInput').addEventListener('change', () => { currentDay = parseInt(document.getElementById('dayInput').value) || 0; saveLocal(); updateStage(); render(); });
   document.getElementById('quickStages').addEventListener('click', e => {
     const dot = e.target.closest('.stage-dot');
@@ -440,13 +502,10 @@
     document.querySelectorAll('.stage-dot').forEach(d => d.classList.remove('active'));
     dot.classList.add('active');
   });
-
   function updateStage() {
     const label = document.getElementById('stageLabel');
     label.textContent = currentDay < 0 ? '🤰 待产期' : (currentDay <= 3 ? '🏥 住院期间' : (currentDay <= 30 ? '🏠 回家~满月' : '👶 满月后'));
   }
-
-  // 视图与筛选
   document.querySelector('.view-row').addEventListener('click', e => {
     const btn = e.target.closest('.view-btn');
     if (!btn) return;
@@ -464,9 +523,7 @@
     render();
   });
 
-  // 手动添加弹窗
-  document.getElementById('addItemBtn').addEventListener('click', () => { document.getElementById('manualModal').style.display = 'flex'; });
-  document.getElementById('manualClose').addEventListener('click', () => { document.getElementById('manualModal').style.display = 'none'; });
+  // 手动添加保存
   document.getElementById('manualSave').addEventListener('click', () => {
     const name = document.getElementById('mName').value.trim();
     if (!name) return showToast('名称必填');
@@ -490,7 +547,6 @@
     render(); updateAlert(); showToast('已添加');
   });
 
-  // 搜索填充
   document.getElementById('searchItemBtn').addEventListener('click', () => {
     const name = document.getElementById('searchName').value.trim();
     if (!name) return showToast('请输入名称');
@@ -514,20 +570,15 @@
   document.getElementById('taobaoSearchBtn').addEventListener('click', () => { const name = document.getElementById('searchName').value.trim(); if(name) window.open(`https://s.taobao.com/search?q=${encodeURIComponent(name)}`); });
   document.getElementById('clipboardBtn').addEventListener('click', async () => { try { const text = await navigator.clipboard.readText(); document.getElementById('mName').value = text.split(/[\s,]+/)[0] || ''; document.getElementById('mDesc').value = text.slice(0,50); showToast('已识别剪切板'); } catch { showToast('无法读取剪切板'); } });
 
-  // 物品库
-  document.getElementById('openLibraryBtn').addEventListener('click', () => { document.getElementById('libraryModal').style.display = 'flex'; renderLibrary(); });
-  document.getElementById('libraryClose').addEventListener('click', () => { document.getElementById('libraryModal').style.display = 'none'; });
-  document.getElementById('libSearch').addEventListener('input', renderLibrary);
-  document.getElementById('libRoleFilter').addEventListener('change', renderLibrary);
   document.getElementById('libraryList').addEventListener('click', e => {
-    if (e.target.tagName === 'BUTTON' && e.target.dataset.libname) {
-      const name = e.target.dataset.libname;
-      const item = masterLibrary.find(i => i.name === name);
-      if (item && !allItems().some(i => i.name === name)) {
-        customItems.push({...item, id: Date.now()});
-        saveLocal(); render(); updateAlert(); showToast(`已添加 ${name}`);
-      } else showToast('物品已存在');
-    }
+    const btn = e.target.closest('button');
+    if (!btn || !btn.dataset.libname) return;
+    const name = btn.dataset.libname;
+    const item = masterLibrary.find(i => i.name === name);
+    if (item && !allItems().some(i => i.name === name)) {
+      customItems.push({...item, id: Date.now()});
+      saveLocal(); render(); updateAlert(); showToast(`已添加 ${name}`);
+    } else showToast('物品已存在');
   });
 
   function renderLibrary() {
@@ -545,25 +596,34 @@
     `).join('') : '<p style="text-align:center;padding:20px;">物品库中暂无未使用的物品</p>';
   }
 
-  // GitHub 同步函数
+  // 可靠的 Base64 编码
+  function toBase64(str) {
+    return btoa(String.fromCharCode(...new TextEncoder().encode(str)));
+  }
+
   async function uploadToGitHub() {
     if (!ghConfig) return false;
     try {
       const match = ghConfig.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
       if (!match) throw new Error('Invalid URL');
       const [_, owner, repo] = match;
-      // 保持 skip 状态以备后续使用
-      const content = btoa(unescape(encodeURIComponent(JSON.stringify({ customItems, itemStates, currentDay }))));
-      const existing = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}`, {
-        headers: { Authorization: `token ${ghConfig.token}` }
+      const data = { customItems, itemStates, currentDay };
+      const json = JSON.stringify(data);
+      const content = toBase64(json);
+      const existing = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}?t=${Date.now()}`, {
+        headers: { Authorization: `token ${ghConfig.token}` }, cache: 'no-store'
       }).then(r => r.json()).catch(() => null);
       const sha = existing ? existing.sha : '';
-      await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}`, {
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}`, {
         method: 'PUT',
-        headers: { Authorization: `token ${ghConfig.token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'update checklist', content, sha })
+        headers: {
+          Authorization: `token ${ghConfig.token}`,
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify({ message: 'sync', content, sha }),
+        cache: 'no-store'
       });
-      return true;
+      return res.ok;
     } catch (e) { console.error(e); return false; }
   }
 
@@ -573,11 +633,11 @@
       const match = ghConfig.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
       if (!match) throw new Error('Invalid URL');
       const [_, owner, repo] = match;
-      const data = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}`, {
-        headers: { Authorization: `token ${ghConfig.token}` }
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}?t=${Date.now()}`, {
+        headers: { Authorization: `token ${ghConfig.token}` }, cache: 'no-store'
       }).then(r => r.json());
-      if (data.content) {
-        const json = JSON.parse(atob(data.content));
+      if (res.content) {
+        const json = JSON.parse(atob(res.content));
         customItems = json.customItems || [];
         itemStates = json.itemStates || {};
         currentDay = json.currentDay || 0;
@@ -594,82 +654,10 @@
     clearTimeout(autoSyncTimer);
     autoSyncTimer = setTimeout(async () => {
       const ok = await uploadToGitHub();
-      if (ok) {
-        const now = new Date();
-        document.getElementById('syncStatus').textContent = `☁️ 已自动同步 ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-      }
+      if (ok) document.getElementById('syncStatus').textContent = `☁️ 已自动同步 ${new Date().toLocaleTimeString()}`;
     }, 2000);
   }
 
-  const autoSyncToggle = document.getElementById('autoSyncToggle');
-  autoSyncToggle.classList.toggle('active', autoSyncEnabled);
-  autoSyncToggle.addEventListener('click', () => {
-    autoSyncEnabled = !autoSyncEnabled;
-    localStorage.setItem(AUTO_SYNC_KEY, autoSyncEnabled);
-    autoSyncToggle.classList.toggle('active', autoSyncEnabled);
-    document.getElementById('syncStatus').textContent = autoSyncEnabled ? '☁️ 自动同步已开启' : '🔒 自动同步已关闭';
-    if (autoSyncEnabled) scheduleAutoSync();
-  });
-
-  // 按钮事件
-  document.getElementById('uploadBtn').addEventListener('click', async function() {
-    if (!ghConfig) {
-      document.getElementById('syncModal').style.display = 'flex';
-      document.getElementById('repoUrl').value = 'https://github.com/july-begins/baby-checklist';
-      document.getElementById('repoToken').value = ghConfig?.token || '';
-      return;
-    }
-    showToast('正在同步到云端...');
-    const ok = await uploadToGitHub();
-    showToast(ok ? '已同步' : '同步失败');
-  });
-
-  document.getElementById('downloadBtn').addEventListener('click', async function() {
-    if (!ghConfig) {
-      document.getElementById('syncModal').style.display = 'flex';
-      document.getElementById('repoUrl').value = 'https://github.com/july-begins/baby-checklist';
-      document.getElementById('repoToken').value = ghConfig?.token || '';
-      return;
-    }
-    showToast('正在从云端同步...');
-    const ok = await downloadFromGitHub();
-    if (ok) { document.getElementById('dayInput').value = currentDay; render(); updateAlert(); }
-    showToast(ok ? '已更新' : '下载失败');
-  });
-
-  document.getElementById('syncSaveBtn').addEventListener('click', () => {
-    const url = document.getElementById('repoUrl').value.trim();
-    const token = document.getElementById('repoToken').value.trim();
-    if (!url || !token) return showToast('请完整填写');
-    ghConfig = { url, token, path: 'data.json' };
-    localStorage.setItem(GIT_CONFIG_KEY, JSON.stringify(ghConfig));
-    document.getElementById('syncModal').style.display = 'none';
-    showToast('配置已保存');
-    document.getElementById('syncStatus').textContent = '☁️ 已配置';
-  });
-  document.getElementById('testConnBtn').addEventListener('click', async () => {
-    const url = document.getElementById('repoUrl').value.trim();
-    const token = document.getElementById('repoToken').value.trim();
-    if (!url || !token) return showToast('请完整填写');
-    const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
-    if (!match) return showToast('仓库地址格式不正确');
-    showToast('测试中...');
-    try {
-      const res = await fetch(`https://api.github.com/repos/${match[1]}/${match[2]}/contents/data.json`, {
-        headers: { Authorization: `token ${token}` }
-      });
-      showToast(res.ok ? '连接成功' : '连接失败，请检查令牌权限');
-    } catch (e) { showToast('网络错误'); }
-  });
-  document.getElementById('syncCloseBtn').addEventListener('click', () => { document.getElementById('syncModal').style.display = 'none'; });
-
-  // 导入导出
-  document.getElementById('exportBtn').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify({ customItems, itemStates, currentDay })], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '待产包备份.json'; a.click();
-    showToast('备份文件已下载');
-  });
-  document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFileInput').click());
   document.getElementById('importFileInput').addEventListener('change', e => {
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
@@ -696,7 +684,7 @@
   render();
   updateAlert();
   if (ghConfig) {
-    document.getElementById('syncStatus').textContent = autoSyncEnabled ? '☁️ 已配置，修改后自动同步' : '🔒 自动同步已关闭';
+    document.getElementById('syncStatus').textContent = autoSyncEnabled ? '☁️ 已配置' : '🔒 自动同步关闭';
   }
 })();
 </script>
