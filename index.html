@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>待产包 & 新生儿护理 · 最终完美版</title>
+  <title>待产包 & 新生儿护理 · 终极版</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #faf7f2; color: #3e362e; padding: 12px; max-width: 750px; margin: 0 auto; }
@@ -249,11 +249,11 @@
     { id:205, name:"满月体检", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F4CB}", qty:0, s:28, e:32, desc:"评估发育", what:"体格检查", why:"早发现偏离", how:"社区/儿科", benefit:"健康监测", alt:"" }
   ];
 
-  const STORAGE_CUSTOM = 'bb_custom_final7';
-  const STORAGE_STATES = 'bb_states_final7';
-  const STORAGE_DAY = 'bb_day_final7';
-  const GIT_CONFIG_KEY = 'gh_config_final7';
-  const AUTO_SYNC_KEY = 'autoSyncEnabled7';
+  const STORAGE_CUSTOM = 'bb_custom_v8';
+  const STORAGE_STATES = 'bb_states_v8';
+  const STORAGE_DAY = 'bb_day_v8';
+  const GIT_CONFIG_KEY = 'gh_config_v8';
+  const AUTO_SYNC_KEY = 'autoSync_v8';
 
   let customItems = JSON.parse(localStorage.getItem(STORAGE_CUSTOM) || '[]');
   let itemStates = JSON.parse(localStorage.getItem(STORAGE_STATES) || '{}');
@@ -283,22 +283,28 @@
   function setState(id, updates) {
     const current = getState(id);
     itemStates[id] = { ...current, ...updates };
-    // 如果状态变为 skip，确保 customItems 中也移除该物品（如果存在）
+    // 如果状态改为 skip，立即彻底移除该物品
     if (updates.status === 'skip') {
+      // 从 customItems 中移除
       customItems = customItems.filter(i => i.id != id);
+      // 从 itemStates 中删除条目，避免残留
+      delete itemStates[id];
     }
     saveLocal();
     if (ghConfig && autoSyncEnabled) scheduleAutoSync();
   }
 
-  // 所有当前在用的物品（状态不是 skip）
+  // 获取当前活跃物品（status 不是 skip 的）
   function allItems() {
-    // 从 masterLibrary 和 customItems 中排除状态为 skip 的条目
-    const skipIds = Object.entries(itemStates)
-      .filter(([_, v]) => v.status === 'skip')
-      .map(([k]) => k);
-    const activeMaster = masterLibrary.filter(i => !skipIds.includes(String(i.id)));
-    const activeCustom = customItems.filter(i => !skipIds.includes(String(i.id)));
+    // 收集所有状态为 skip 的 ID
+    const skipIds = new Set();
+    for (const [id, state] of Object.entries(itemStates)) {
+      if (state.status === 'skip') skipIds.add(id);
+    }
+    // 过滤 masterLibrary
+    const activeMaster = masterLibrary.filter(i => !skipIds.has(String(i.id)));
+    // 过滤 customItems（已从数组和 states 中清理，但保险起见再过滤一次）
+    const activeCustom = customItems.filter(i => !skipIds.has(String(i.id)));
     return [...activeMaster, ...activeCustom];
   }
 
@@ -533,8 +539,9 @@
   function renderLibrary() {
     const search = document.getElementById('libSearch').value.toLowerCase();
     const role = document.getElementById('libRoleFilter').value;
-    const existing = allItems().map(i => i.name);
-    let items = masterLibrary.filter(i => !existing.includes(i.name));
+    // 当前正在使用（状态不是 skip）的物品名称集合
+    const usedNames = new Set(allItems().map(i => i.name));
+    let items = masterLibrary.filter(i => !usedNames.has(i.name));
     if (role !== 'all') items = items.filter(i => i.role === role);
     if (search) items = items.filter(i => i.name.toLowerCase().includes(search) || (i.desc||'').includes(search));
     document.getElementById('libraryList').innerHTML = items.length ? items.map(i => `
@@ -542,7 +549,7 @@
         <span>${i.emoji} ${i.name} (${i.role}·${i.cat})</span>
         <button class="status-btn" data-libname="${i.name}">添加</button>
       </div>
-    `).join('') : '<p style="text-align:center;padding:20px;">没有可添加的物品</p>';
+    `).join('') : '<p style="text-align:center;padding:20px;">物品库中暂无未使用的物品</p>';
   }
 
   // GitHub 同步函数
@@ -552,7 +559,12 @@
       const match = ghConfig.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
       if (!match) throw new Error('Invalid URL');
       const [_, owner, repo] = match;
-      const content = btoa(unescape(encodeURIComponent(JSON.stringify({ customItems, itemStates, currentDay }))));
+      // 上传前确保数据干净（移除 skip 状态的残留）
+      const cleanedStates = {};
+      for (const [id, state] of Object.entries(itemStates)) {
+        if (state.status !== 'skip') cleanedStates[id] = state;
+      }
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify({ customItems, itemStates: cleanedStates, currentDay }))));
       const existing = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${ghConfig.path}`, {
         headers: { Authorization: `token ${ghConfig.token}` }
       }).then(r => r.json()).catch(() => null);
@@ -582,6 +594,14 @@
         const json = JSON.parse(atob(data.content));
         customItems = json.customItems || [];
         itemStates = json.itemStates || {};
+        // 彻底清除 skip 状态条目
+        const cleanedStates = {};
+        for (const [id, state] of Object.entries(itemStates)) {
+          if (state.status !== 'skip') cleanedStates[id] = state;
+        }
+        itemStates = cleanedStates;
+        // 也清理 customItems 中可能残留的 skip 物品
+        customItems = customItems.filter(i => !(itemStates[i.id]?.status === 'skip'));
         currentDay = json.currentDay || 0;
         saveLocal();
         return true;
