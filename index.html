@@ -250,11 +250,11 @@
   ];
 
   // 统一存储键
-  const STORAGE_CUSTOM = 'bb_custom_final';
-  const STORAGE_STATES = 'bb_states_final';
-  const STORAGE_DAY = 'bb_day_final';
-  const GIT_CONFIG_KEY = 'gh_config_final';
-  const AUTO_SYNC_KEY = 'autoSync_final';
+  const STORAGE_CUSTOM = 'bb_custom_final_x';
+  const STORAGE_STATES = 'bb_states_final_x';
+  const STORAGE_DAY = 'bb_day_final_x';
+  const GIT_CONFIG_KEY = 'gh_config_final_x';
+  const AUTO_SYNC_KEY = 'autoSync_final_x';
 
   let customItems = JSON.parse(localStorage.getItem(STORAGE_CUSTOM) || '[]');
   let itemStates = JSON.parse(localStorage.getItem(STORAGE_STATES) || '{}');
@@ -396,8 +396,22 @@
     document.getElementById('progressText').textContent = `${pct}% 已备 (${done}/${total})`;
   }
 
-  // 全局事件监听
+  // 【关键修复】在全局事件监听中处理物品卡点击展开详情
   document.addEventListener('click', function(e) {
+    // 如果点击的是 .item-main 或其内部非按钮/输入区域，则展开详情
+    const main = e.target.closest('.item-main');
+    if (main) {
+      const id = main.dataset.id;
+      // 排除点击了按钮或输入框的情况
+      if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('textarea')) {
+        const detail = document.getElementById(`detail-${id}`);
+        if (detail) {
+          detail.classList.toggle('open');
+          return;
+        }
+      }
+    }
+
     const btn = e.target.closest('button');
     if (!btn) return;
 
@@ -495,7 +509,6 @@
 
   function showSyncModal() {
     const modal = document.getElementById('syncModal');
-    // 自动填充已保存的配置
     if (ghConfig) {
       document.getElementById('repoUrl').value = ghConfig.url || 'https://github.com/july-begins/baby-checklist';
       document.getElementById('repoToken').value = ghConfig.token || '';
@@ -609,13 +622,8 @@
     `).join('') : '<p style="text-align:center;padding:20px;">物品库中暂无未使用的物品</p>';
   }
 
-  // 标准 Base64 编码（兼容中文）
-  function utoa(str) {
-    return btoa(unescape(encodeURIComponent(str)));
-  }
-  function atou(b64) {
-    return decodeURIComponent(escape(atob(b64)));
-  }
+  function utoa(str) { return btoa(unescape(encodeURIComponent(str))); }
+  function atou(b64) { return decodeURIComponent(escape(atob(b64))); }
 
   async function uploadToGitHub() {
     if (!ghConfig) return false;
