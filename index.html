@@ -15,7 +15,6 @@
     .btn { padding: 10px 18px; border-radius: 24px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
     .btn-primary { background: #b08968; color: white; }
     .btn-outline { background: #fff; color: #b08968; border: 2px solid #b08968; }
-    .btn-small { padding: 6px 12px; font-size: 0.75rem; }
     .sync-status { font-size: 0.8rem; text-align: center; margin: 6px 0 12px; color: #8b7355; }
 
     .toggle-sync { background: #f0e5d8; border: none; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
@@ -187,80 +186,80 @@
 
 <script>
 (function() {
-  // ==================== 完整物品库 (70+物品) ====================
+  // 完整物品库（Unicode 转义避免乱码）
   const masterLibrary = [
-    { id:1, name:"产褥垫", role:"妈妈", cat:"卫生", emoji:"🛏️", qty:15, s:-3, e:5, desc:"60×90cm一次性防水垫", what:"一次性防水垫巾", why:"防止羊水恶露污染", how:"平铺臀下脏即换", benefit:"方便卫生", alt:"子初/十月结晶" },
-    { id:2, name:"产妇卫生巾", role:"妈妈", cat:"卫生", emoji:"🩹", qty:10, s:0, e:7, desc:"L/XL加大吸收", what:"加大卫生巾", why:"准确评估出血量", how:"每2-3h更换", benefit:"干爽不侧漏", alt:"安心裤" },
-    { id:3, name:"一次性内裤", role:"妈妈", cat:"卫生", emoji:"🩲", qty:10, s:-1, e:7, desc:"灭菌独立包装", what:"一次性棉内裤", why:"避免清洗感染", how:"每日更换", benefit:"便捷洁净", alt:"" },
-    { id:4, name:"会阴冲洗器", role:"妈妈", cat:"卫生", emoji:"🚿", qty:1, s:0, e:30, desc:"弯头挤压瓶", what:"冲洗瓶", why:"便后冲洗减菌", how:"装温水由前向后冲", benefit:"促进愈合", alt:"手持花洒" },
-    { id:5, name:"一次性马桶垫", role:"妈妈", cat:"卫生", emoji:"🚽", qty:20, s:-1, e:5, desc:"防水防滑", what:"马桶坐垫", why:"隔离细菌", how:"每厕更换", benefit:"卫生方便", alt:"" },
-    { id:6, name:"会阴冷敷贴", role:"妈妈", cat:"卫生", emoji:"❄️", qty:4, s:0, e:2, desc:"物理镇痛", what:"冷敷贴", why:"减轻伤口水肿", how:"产后24h内敷", benefit:"缓解疼痛", alt:"地球妈妈喷雾" },
-    { id:7, name:"哺乳睡衣", role:"妈妈", cat:"衣物", emoji:"👚", qty:3, s:-1, e:30, desc:"侧开口方便哺乳", what:"棉质睡衣", why:"方便哺乳", how:"备2-3套", benefit:"保暖", alt:"" },
-    { id:8, name:"哺乳内衣+乳垫", role:"妈妈", cat:"衣物", emoji:"👙", qty:3, s:0, e:180, desc:"无钢圈", what:"文胸及吸奶垫", why:"承托防漏", how:"湿即更换", benefit:"防下垂", alt:"Lansinoh" },
-    { id:9, name:"长筒棉袜+拖鞋", role:"妈妈", cat:"衣物", emoji:"🧦", qty:2, s:-1, e:7, desc:"保暖防滑", what:"棉袜拖鞋", why:"足部保暖", how:"下床即穿", benefit:"预防关节不适", alt:"" },
-    { id:10, name:"出院长袖衣裤+帽子", role:"妈妈", cat:"衣物", emoji:"🧥", qty:1, s:-1, e:0, desc:"防风保暖", what:"外衣", why:"产后避风", how:"出院穿戴", benefit:"预防感冒", alt:"" },
-    { id:11, name:"收腹带(剖宫产)", role:"妈妈", cat:"护理", emoji:"🎗️", qty:1, s:0, e:14, desc:"医用腹带", what:"棉质腹带", why:"固定伤口", how:"遵医嘱绑", benefit:"保护切口", alt:"顺产不推荐" },
-    { id:12, name:"吸奶器", role:"妈妈", cat:"哺乳", emoji:"🍼", qty:1, s:0, e:180, desc:"电动/手动", what:"吸乳装置", why:"维持泌乳", how:"每3h吸15分钟", benefit:"避免乳腺炎", alt:"美德乐" },
-    { id:13, name:"乳头霜", role:"妈妈", cat:"哺乳", emoji:"💧", qty:1, s:0, e:60, desc:"羊毛脂", what:"修护膏", why:"防皲裂", how:"哺乳后涂", benefit:"缓解疼痛", alt:"Lansinoh" },
-    { id:14, name:"哺乳枕", role:"妈妈", cat:"哺乳", emoji:"🍩", qty:1, s:0, e:180, desc:"U型枕", what:"哺乳枕", why:"避免弯腰", how:"喂奶时使用", benefit:"预防妈妈手", alt:"" },
-    { id:15, name:"弯头吸管/吸管杯", role:"妈妈", cat:"其他", emoji:"🥤", qty:1, s:0, e:3, desc:"卧床饮水", what:"吸管杯", why:"不便坐起", how:"小口慢饮", benefit:"保证饮水", alt:"" },
-    { id:16, name:"零食+电解质饮料", role:"妈妈", cat:"其他", emoji:"🍌", qty:3, s:-3, e:0, desc:"补充体力", what:"零食饮料", why:"待产消耗", how:"间歇进食", benefit:"维持体力", alt:"遵医嘱" },
-    { id:17, name:"胎心监护带", role:"妈妈", cat:"其他", emoji:"📈", qty:2, s:-3, e:0, desc:"固定探头", what:"弹力带", why:"卫生", how:"待产时用", benefit:"避免交叉", alt:"" },
-    { id:18, name:"证件资料包", role:"妈妈", cat:"证件", emoji:"📁", qty:1, s:-7, e:0, desc:"身份证/医保卡等", what:"证件", why:"办理住院", how:"透明袋装", benefit:"避免缺漏", alt:"" },
-    { id:19, name:"手机+充电器", role:"妈妈", cat:"其他", emoji:"📱", qty:1, s:-3, e:5, desc:"联络记录", what:"通信", why:"联络家属", how:"待产时用", benefit:"保持联系", alt:"" },
-    { id:20, name:"洗漱包", role:"妈妈", cat:"其他", emoji:"🪥", qty:1, s:-1, e:5, desc:"软毛牙刷等", what:"洗漱用品", why:"保持清洁", how:"温水洗漱", benefit:"舒适", alt:"" },
-    { id:21, name:"储奶瓶/储奶袋", role:"妈妈", cat:"哺乳", emoji:"🏷️", qty:10, s:1, e:180, desc:"储存母乳", what:"储奶容器", why:"珍贵初乳", how:"标记日期", benefit:"不浪费", alt:"" },
-    { id:22, name:"骨盆带", role:"妈妈", cat:"护理", emoji:"🦴", qty:1, s:3, e:42, desc:"辅助恢复", what:"弹性绑带", why:"耻骨分离", how:"白天佩戴", benefit:"改善骨盆", alt:"" },
-    { id:30, name:"NB纸尿裤", role:"宝宝", cat:"喂养", emoji:"👶", qty:60, s:0, e:30, desc:"新生儿专用", what:"小号尿不湿", why:"吸收排泄", how:"2-3h更换", benefit:"防红臀", alt:"花王/尤妮佳" },
-    { id:31, name:"棉柔巾/湿巾", role:"宝宝", cat:"喂养", emoji:"🧻", qty:6, s:0, e:90, desc:"干湿两用", what:"纯棉无纺布", why:"柔软无刺激", how:"温水蘸干", benefit:"减少摩擦", alt:"全棉时代" },
-    { id:32, name:"护臀膏(氧化锌)", role:"宝宝", cat:"喂养", emoji:"🧴", qty:1, s:0, e:180, desc:"隔离刺激", what:"隔离霜", why:"形成保护膜", how:"厚涂", benefit:"防尿布疹", alt:"维蕾德" },
-    { id:33, name:"一段配方奶+软勺", role:"宝宝", cat:"喂养", emoji:"🥄", qty:1, s:0, e:7, desc:"应急补充", what:"配方奶", why:"母乳不足", how:"勺喂", benefit:"保护亲喂", alt:"液态水奶" },
-    { id:34, name:"奶瓶+清洗工具", role:"宝宝", cat:"喂养", emoji:"🍶", qty:2, s:0, e:180, desc:"宽口径", what:"奶瓶及工具", why:"防胀气", how:"每次清洗", benefit:"防鹅口疮", alt:"贝亲" },
-    { id:35, name:"连体衣", role:"宝宝", cat:"衣物", emoji:"👘", qty:3, s:0, e:30, desc:"A类纯棉", what:"和尚服", why:"方便穿脱", how:"手洗晾晒", benefit:"舒适", alt:"" },
-    { id:36, name:"包被(薄+厚)", role:"宝宝", cat:"衣物", emoji:"🤱", qty:2, s:0, e:14, desc:"包裹巾", what:"方形包巾", why:"模拟子宫", how:"上紧下松", benefit:"减少惊跳", alt:"襁褓睡袋" },
-    { id:37, name:"胎帽+小袜子", role:"宝宝", cat:"衣物", emoji:"🧢", qty:2, s:0, e:30, desc:"保暖", what:"帽袜", why:"头部散热", how:"松口不勒", benefit:"维持体温", alt:"" },
-    { id:38, name:"口水巾/方巾", role:"宝宝", cat:"衣物", emoji:"🧣", qty:8, s:0, e:90, desc:"擦溢奶", what:"多层纱布", why:"保持干爽", how:"勤换洗", benefit:"防淹脖子", alt:"" },
-    { id:39, name:"安全提篮/座椅", role:"宝宝", cat:"出行", emoji:"🚗", qty:1, s:0, e:0, desc:"出院用", what:"安全座椅", why:"法律要求", how:"反向安装", benefit:"行车安全", alt:"禁止手抱" },
-    { id:40, name:"碘伏棉签(脐带)", role:"宝宝", cat:"护理", emoji:"☁️", qty:20, s:0, e:14, desc:"消毒残端", what:"碘伏棉签", why:"防感染", how:"每日消毒", benefit:"脐带脱落", alt:"干燥法" },
-    { id:41, name:"婴儿浴盆+水温计", role:"宝宝", cat:"护理", emoji:"🛁", qty:1, s:3, e:365, desc:"专用浴盆", what:"浴盆", why:"安全沐浴", how:"水温37-38℃", benefit:"清洁", alt:"" },
-    { id:42, name:"婴儿床", role:"宝宝", cat:"睡眠", emoji:"🛏️", qty:1, s:0, e:365, desc:"同室不同床", what:"安全婴儿床", why:"降低SIDS", how:"裸床+睡袋仰卧", benefit:"安全睡眠", alt:"" },
-    { id:43, name:"襁褓睡袋", role:"宝宝", cat:"睡眠", emoji:"💤", qty:2, s:0, e:90, desc:"包裹手臂", what:"睡袋", why:"抑制惊跳", how:"上紧下松", benefit:"延长睡眠", alt:"" },
-    { id:44, name:"恒温水壶+温奶器", role:"宝宝", cat:"喂养", emoji:"♨️", qty:1, s:0, e:365, desc:"调奶", what:"水壶", why:"精准水温", how:"45℃/70℃", benefit:"冲奶方便", alt:"WHO建议" },
-    { id:45, name:"奶瓶消毒锅", role:"宝宝", cat:"喂养", emoji:"🧼", qty:1, s:0, e:365, desc:"消毒", what:"蒸汽/紫外线", why:"杀菌", how:"每次用后", benefit:"防鹅口疮", alt:"煮沸消毒" },
-    { id:46, name:"维生素D3滴剂", role:"宝宝", cat:"护理", emoji:"💊", qty:1, s:15, e:730, desc:"400IU/日", what:"维生素D", why:"母乳不足", how:"每日1滴", benefit:"钙吸收", alt:"AD滴剂" },
-    { id:47, name:"生理盐水+吸鼻器", role:"宝宝", cat:"护理", emoji:"👃", qty:1, s:0, e:180, desc:"通鼻", what:"盐水吸鼻球", why:"鼻塞", how:"滴盐水后吸", benefit:"呼吸顺畅", alt:"" },
-    { id:48, name:"沐浴露+润肤乳+抚触油", role:"宝宝", cat:"护理", emoji:"🧴", qty:1, s:3, e:365, desc:"洗护", what:"弱酸性", why:"清洁保湿", how:"浴后涂抹", benefit:"皮肤屏障", alt:"" },
-    { id:49, name:"婴儿指甲剪", role:"宝宝", cat:"护理", emoji:"✂️", qty:1, s:0, e:365, desc:"防抓伤", what:"指甲剪", why:"指甲锋利", how:"熟睡修剪", benefit:"安全", alt:"" },
-    { id:50, name:"耳温枪/额温枪", role:"宝宝", cat:"护理", emoji:"🌡️", qty:1, s:0, e:365, desc:"测温", what:"红外体温计", why:"快速监测", how:"轻触", benefit:"安全", alt:"腋温计" },
-    { id:51, name:"黑白卡", role:"宝宝", cat:"早教", emoji:"🖤", qty:1, s:0, e:90, desc:"视觉训练", what:"黑白图案", why:"促进神经", how:"距眼20-30cm", benefit:"智力开发", alt:"" },
-    { id:52, name:"小夜灯", role:"宝宝", cat:"环境", emoji:"💡", qty:1, s:0, e:365, desc:"低亮度暖光", what:"夜灯", why:"不刺眼", how:"低处照明", benefit:"昼夜节律", alt:"" },
-    { id:53, name:"婴儿洗衣液/皂", role:"宝宝", cat:"清洁", emoji:"🧺", qty:1, s:0, e:365, desc:"无刺激", what:"洗衣液", why:"避免刺激", how:"单独清洗", benefit:"防过敏", alt:"" },
-    { id:54, name:"尿布台", role:"宝宝", cat:"清洁", emoji:"📦", qty:1, s:0, e:180, desc:"护腰", what:"高台", why:"避免弯腰", how:"安全带使用", benefit:"保护腰椎", alt:"" },
-    { id:100, name:"产后尽早排尿", role:"妈妈", cat:"护理事项", emoji:"🚰", qty:0, s:0, e:1, desc:"4-6h内小便", what:"自主排尿", why:"避免尿潴留", how:"多饮水诱导", benefit:"防出血", alt:"" },
-    { id:101, name:"恶露观察", role:"妈妈", cat:"护理事项", emoji:"🩸", qty:0, s:0, e:42, desc:"记录变化", what:"观察恶露", why:"反映恢复", how:"记录颜色量", benefit:"早发现异常", alt:"" },
-    { id:102, name:"生理性胀奶处理", role:"妈妈", cat:"护理事项", emoji:"🍈", qty:0, s:2, e:7, desc:"乳房肿胀", what:"胀奶", why:"易致乳腺炎", how:"冷敷勤吸", benefit:"缓解", alt:"禁暴力揉" },
-    { id:103, name:"早吸吮早开奶", role:"妈妈", cat:"护理事项", emoji:"🤱", qty:0, s:0, e:0, desc:"出生1h内", what:"三早", why:"初乳抗体", how:"皮肤接触", benefit:"建立免疫", alt:"" },
-    { id:104, name:"凯格尔运动", role:"妈妈", cat:"护理事项", emoji:"🧘", qty:0, s:1, e:365, desc:"盆底肌训练", what:"缩紧运动", why:"改善漏尿", how:"收紧保持放松", benefit:"盆底康复", alt:"" },
-    { id:105, name:"腹直肌分离自测", role:"妈妈", cat:"护理事项", emoji:"📏", qty:0, s:7, e:42, desc:"仰卧测量", what:"自测方法", why:"分离导致腰痛", how:"仰卧抬肩探入", benefit:"及时干预", alt:"避免卷腹" },
-    { id:200, name:"卡介苗", role:"宝宝", cat:"疫苗/检查", emoji:"💉", qty:0, s:0, e:1, desc:"24h内接种", what:"结核疫苗", why:"预防重症结核", how:"左上臂皮内", benefit:"大幅降低风险", alt:"必种" },
-    { id:201, name:"乙肝疫苗①", role:"宝宝", cat:"疫苗/检查", emoji:"💉", qty:0, s:0, e:1, desc:"24h内", what:"乙肝疫苗", why:"阻断传播", how:"大腿肌注", benefit:"保护率95%", alt:"" },
-    { id:202, name:"足底血筛查", role:"宝宝", cat:"疫苗/检查", emoji:"🩸", qty:0, s:2, e:3, desc:"72h后采血", what:"遗传代谢病筛查", why:"早期无症状", how:"足跟采血", benefit:"及时干预", alt:"" },
-    { id:203, name:"听力筛查", role:"宝宝", cat:"疫苗/检查", emoji:"👂", qty:0, s:2, e:3, desc:"无创测试", what:"听力测试", why:"早发现耳聋", how:"睡眠中测", benefit:"避免聋哑", alt:"" },
-    { id:204, name:"乙肝疫苗②", role:"宝宝", cat:"疫苗/检查", emoji:"💉", qty:0, s:30, e:30, desc:"满月接种", what:"第二针", why:"完成基础免疫", how:"社区接种", benefit:"保护力提升", alt:"" },
-    { id:205, name:"满月体检", role:"宝宝", cat:"疫苗/检查", emoji:"📋", qty:0, s:28, e:32, desc:"评估发育", what:"体格检查", why:"早发现偏离", how:"社区/儿科", benefit:"健康监测", alt:"" }
+    { id:1, name:"产褥垫", role:"妈妈", cat:"卫生", emoji:"\u{1F6CF}", qty:15, s:-3, e:5, desc:"60×90cm一次性防水垫", what:"一次性防水垫巾", why:"防止羊水恶露污染", how:"平铺臀下脏即换", benefit:"方便卫生", alt:"子初/十月结晶" },
+    { id:2, name:"产妇卫生巾", role:"妈妈", cat:"卫生", emoji:"\u{1FA79}", qty:10, s:0, e:7, desc:"L/XL加大吸收", what:"加大卫生巾", why:"准确评估出血量", how:"每2-3h更换", benefit:"干爽不侧漏", alt:"安心裤" },
+    { id:3, name:"一次性内裤", role:"妈妈", cat:"卫生", emoji:"\u{1FA72}", qty:10, s:-1, e:7, desc:"灭菌独立包装", what:"一次性棉内裤", why:"避免清洗感染", how:"每日更换", benefit:"便捷洁净", alt:"" },
+    { id:4, name:"会阴冲洗器", role:"妈妈", cat:"卫生", emoji:"\u{1F6BF}", qty:1, s:0, e:30, desc:"弯头挤压瓶", what:"冲洗瓶", why:"便后冲洗减菌", how:"装温水由前向后冲", benefit:"促进愈合", alt:"手持花洒" },
+    { id:5, name:"一次性马桶垫", role:"妈妈", cat:"卫生", emoji:"\u{1F6BD}", qty:20, s:-1, e:5, desc:"防水防滑", what:"马桶坐垫", why:"隔离细菌", how:"每厕更换", benefit:"卫生方便", alt:"" },
+    { id:6, name:"会阴冷敷贴", role:"妈妈", cat:"卫生", emoji:"\u2744\uFE0F", qty:4, s:0, e:2, desc:"物理镇痛", what:"冷敷贴", why:"减轻伤口水肿", how:"产后24h内敷", benefit:"缓解疼痛", alt:"地球妈妈喷雾" },
+    { id:7, name:"哺乳睡衣", role:"妈妈", cat:"衣物", emoji:"\u{1F45A}", qty:3, s:-1, e:30, desc:"侧开口方便哺乳", what:"棉质睡衣", why:"方便哺乳", how:"备2-3套", benefit:"保暖", alt:"" },
+    { id:8, name:"哺乳内衣+乳垫", role:"妈妈", cat:"衣物", emoji:"\u{1F459}", qty:3, s:0, e:180, desc:"无钢圈", what:"文胸及吸奶垫", why:"承托防漏", how:"湿即更换", benefit:"防下垂", alt:"Lansinoh" },
+    { id:9, name:"长筒棉袜+拖鞋", role:"妈妈", cat:"衣物", emoji:"\u{1F9E6}", qty:2, s:-1, e:7, desc:"保暖防滑", what:"棉袜拖鞋", why:"足部保暖", how:"下床即穿", benefit:"预防关节不适", alt:"" },
+    { id:10, name:"出院长袖衣裤+帽子", role:"妈妈", cat:"衣物", emoji:"\u{1F9E5}", qty:1, s:-1, e:0, desc:"防风保暖", what:"外衣", why:"产后避风", how:"出院穿戴", benefit:"预防感冒", alt:"" },
+    { id:11, name:"收腹带(剖宫产)", role:"妈妈", cat:"护理", emoji:"\u{1F397}\uFE0F", qty:1, s:0, e:14, desc:"医用腹带", what:"棉质腹带", why:"固定伤口", how:"遵医嘱绑", benefit:"保护切口", alt:"顺产不推荐" },
+    { id:12, name:"吸奶器", role:"妈妈", cat:"哺乳", emoji:"\u{1F37C}", qty:1, s:0, e:180, desc:"电动/手动", what:"吸乳装置", why:"维持泌乳", how:"每3h吸15分钟", benefit:"避免乳腺炎", alt:"美德乐" },
+    { id:13, name:"乳头霜", role:"妈妈", cat:"哺乳", emoji:"\u{1F4A7}", qty:1, s:0, e:60, desc:"羊毛脂", what:"修护膏", why:"防皲裂", how:"哺乳后涂", benefit:"缓解疼痛", alt:"Lansinoh" },
+    { id:14, name:"哺乳枕", role:"妈妈", cat:"哺乳", emoji:"\u{1F369}", qty:1, s:0, e:180, desc:"U型枕", what:"哺乳枕", why:"避免弯腰", how:"喂奶时使用", benefit:"预防妈妈手", alt:"" },
+    { id:15, name:"弯头吸管/吸管杯", role:"妈妈", cat:"其他", emoji:"\u{1F964}", qty:1, s:0, e:3, desc:"卧床饮水", what:"吸管杯", why:"不便坐起", how:"小口慢饮", benefit:"保证饮水", alt:"" },
+    { id:16, name:"零食+电解质饮料", role:"妈妈", cat:"其他", emoji:"\u{1F34C}", qty:3, s:-3, e:0, desc:"补充体力", what:"零食饮料", why:"待产消耗", how:"间歇进食", benefit:"维持体力", alt:"遵医嘱" },
+    { id:17, name:"胎心监护带", role:"妈妈", cat:"其他", emoji:"\u{1F4C8}", qty:2, s:-3, e:0, desc:"固定探头", what:"弹力带", why:"卫生", how:"待产时用", benefit:"避免交叉", alt:"" },
+    { id:18, name:"证件资料包", role:"妈妈", cat:"证件", emoji:"\u{1F4C1}", qty:1, s:-7, e:0, desc:"身份证/医保卡等", what:"证件", why:"办理住院", how:"透明袋装", benefit:"避免缺漏", alt:"" },
+    { id:19, name:"手机+充电器", role:"妈妈", cat:"其他", emoji:"\u{1F4F1}", qty:1, s:-3, e:5, desc:"联络记录", what:"通信", why:"联络家属", how:"待产时用", benefit:"保持联系", alt:"" },
+    { id:20, name:"洗漱包", role:"妈妈", cat:"其他", emoji:"\u{1FAA5}", qty:1, s:-1, e:5, desc:"软毛牙刷等", what:"洗漱用品", why:"保持清洁", how:"温水洗漱", benefit:"舒适", alt:"" },
+    { id:21, name:"储奶瓶/储奶袋", role:"妈妈", cat:"哺乳", emoji:"\u{1F3F7}\uFE0F", qty:10, s:1, e:180, desc:"储存母乳", what:"储奶容器", why:"珍贵初乳", how:"标记日期", benefit:"不浪费", alt:"" },
+    { id:22, name:"骨盆带", role:"妈妈", cat:"护理", emoji:"\u{1F9B4}", qty:1, s:3, e:42, desc:"辅助恢复", what:"弹性绑带", why:"耻骨分离", how:"白天佩戴", benefit:"改善骨盆", alt:"" },
+    { id:30, name:"NB纸尿裤", role:"宝宝", cat:"喂养", emoji:"\u{1F476}", qty:60, s:0, e:30, desc:"新生儿专用", what:"小号尿不湿", why:"吸收排泄", how:"2-3h更换", benefit:"防红臀", alt:"花王/尤妮佳" },
+    { id:31, name:"棉柔巾/湿巾", role:"宝宝", cat:"喂养", emoji:"\u{1F9FB}", qty:6, s:0, e:90, desc:"干湿两用", what:"纯棉无纺布", why:"柔软无刺激", how:"温水蘸干", benefit:"减少摩擦", alt:"全棉时代" },
+    { id:32, name:"护臀膏(氧化锌)", role:"宝宝", cat:"喂养", emoji:"\u{1F9F4}", qty:1, s:0, e:180, desc:"隔离刺激", what:"隔离霜", why:"形成保护膜", how:"厚涂", benefit:"防尿布疹", alt:"维蕾德" },
+    { id:33, name:"一段配方奶+软勺", role:"宝宝", cat:"喂养", emoji:"\u{1F944}", qty:1, s:0, e:7, desc:"应急补充", what:"配方奶", why:"母乳不足", how:"勺喂", benefit:"保护亲喂", alt:"液态水奶" },
+    { id:34, name:"奶瓶+清洗工具", role:"宝宝", cat:"喂养", emoji:"\u{1F376}", qty:2, s:0, e:180, desc:"宽口径", what:"奶瓶及工具", why:"防胀气", how:"每次清洗", benefit:"防鹅口疮", alt:"贝亲" },
+    { id:35, name:"连体衣", role:"宝宝", cat:"衣物", emoji:"\u{1F458}", qty:3, s:0, e:30, desc:"A类纯棉", what:"和尚服", why:"方便穿脱", how:"手洗晾晒", benefit:"舒适", alt:"" },
+    { id:36, name:"包被(薄+厚)", role:"宝宝", cat:"衣物", emoji:"\u{1F930}", qty:2, s:0, e:14, desc:"包裹巾", what:"方形包巾", why:"模拟子宫", how:"上紧下松", benefit:"减少惊跳", alt:"襁褓睡袋" },
+    { id:37, name:"胎帽+小袜子", role:"宝宝", cat:"衣物", emoji:"\u{1F9E2}", qty:2, s:0, e:30, desc:"保暖", what:"帽袜", why:"头部散热", how:"松口不勒", benefit:"维持体温", alt:"" },
+    { id:38, name:"口水巾/方巾", role:"宝宝", cat:"衣物", emoji:"\u{1F9E3}", qty:8, s:0, e:90, desc:"擦溢奶", what:"多层纱布", why:"保持干爽", how:"勤换洗", benefit:"防淹脖子", alt:"" },
+    { id:39, name:"安全提篮/座椅", role:"宝宝", cat:"出行", emoji:"\u{1F697}", qty:1, s:0, e:0, desc:"出院用", what:"安全座椅", why:"法律要求", how:"反向安装", benefit:"行车安全", alt:"禁止手抱" },
+    { id:40, name:"碘伏棉签(脐带)", role:"宝宝", cat:"护理", emoji:"\u2601\uFE0F", qty:20, s:0, e:14, desc:"消毒残端", what:"碘伏棉签", why:"防感染", how:"每日消毒", benefit:"脐带脱落", alt:"干燥法" },
+    { id:41, name:"婴儿浴盆+水温计", role:"宝宝", cat:"护理", emoji:"\u{1F6C1}", qty:1, s:3, e:365, desc:"专用浴盆", what:"浴盆", why:"安全沐浴", how:"水温37-38℃", benefit:"清洁", alt:"" },
+    { id:42, name:"婴儿床", role:"宝宝", cat:"睡眠", emoji:"\u{1F6CF}", qty:1, s:0, e:365, desc:"同室不同床", what:"安全婴儿床", why:"降低SIDS", how:"裸床+睡袋仰卧", benefit:"安全睡眠", alt:"" },
+    { id:43, name:"襁褓睡袋", role:"宝宝", cat:"睡眠", emoji:"\u{1F4A4}", qty:2, s:0, e:90, desc:"包裹手臂", what:"睡袋", why:"抑制惊跳", how:"上紧下松", benefit:"延长睡眠", alt:"" },
+    { id:44, name:"恒温水壶+温奶器", role:"宝宝", cat:"喂养", emoji:"\u2668\uFE0F", qty:1, s:0, e:365, desc:"调奶", what:"水壶", why:"精准水温", how:"45℃/70℃", benefit:"冲奶方便", alt:"WHO建议" },
+    { id:45, name:"奶瓶消毒锅", role:"宝宝", cat:"喂养", emoji:"\u{1F9FC}", qty:1, s:0, e:365, desc:"消毒", what:"蒸汽/紫外线", why:"杀菌", how:"每次用后", benefit:"防鹅口疮", alt:"煮沸消毒" },
+    { id:46, name:"维生素D3滴剂", role:"宝宝", cat:"护理", emoji:"\u{1F48A}", qty:1, s:15, e:730, desc:"400IU/日", what:"维生素D", why:"母乳不足", how:"每日1滴", benefit:"钙吸收", alt:"AD滴剂" },
+    { id:47, name:"生理盐水+吸鼻器", role:"宝宝", cat:"护理", emoji:"\u{1F443}", qty:1, s:0, e:180, desc:"通鼻", what:"盐水吸鼻球", why:"鼻塞", how:"滴盐水后吸", benefit:"呼吸顺畅", alt:"" },
+    { id:48, name:"沐浴露+润肤乳+抚触油", role:"宝宝", cat:"护理", emoji:"\u{1F9F4}", qty:1, s:3, e:365, desc:"洗护", what:"弱酸性", why:"清洁保湿", how:"浴后涂抹", benefit:"皮肤屏障", alt:"" },
+    { id:49, name:"婴儿指甲剪", role:"宝宝", cat:"护理", emoji:"\u2702\uFE0F", qty:1, s:0, e:365, desc:"防抓伤", what:"指甲剪", why:"指甲锋利", how:"熟睡修剪", benefit:"安全", alt:"" },
+    { id:50, name:"耳温枪/额温枪", role:"宝宝", cat:"护理", emoji:"\u{1F321}\uFE0F", qty:1, s:0, e:365, desc:"测温", what:"红外体温计", why:"快速监测", how:"轻触", benefit:"安全", alt:"腋温计" },
+    { id:51, name:"黑白卡", role:"宝宝", cat:"早教", emoji:"\u{1F5A4}", qty:1, s:0, e:90, desc:"视觉训练", what:"黑白图案", why:"促进神经", how:"距眼20-30cm", benefit:"智力开发", alt:"" },
+    { id:52, name:"小夜灯", role:"宝宝", cat:"环境", emoji:"\u{1F4A1}", qty:1, s:0, e:365, desc:"低亮度暖光", what:"夜灯", why:"不刺眼", how:"低处照明", benefit:"昼夜节律", alt:"" },
+    { id:53, name:"婴儿洗衣液/皂", role:"宝宝", cat:"清洁", emoji:"\u{1F9FA}", qty:1, s:0, e:365, desc:"无刺激", what:"洗衣液", why:"避免刺激", how:"单独清洗", benefit:"防过敏", alt:"" },
+    { id:54, name:"尿布台", role:"宝宝", cat:"清洁", emoji:"\u{1F4E6}", qty:1, s:0, e:180, desc:"护腰", what:"高台", why:"避免弯腰", how:"安全带使用", benefit:"保护腰椎", alt:"" },
+    { id:100, name:"产后尽早排尿", role:"妈妈", cat:"护理事项", emoji:"\u{1F6B0}", qty:0, s:0, e:1, desc:"4-6h内小便", what:"自主排尿", why:"避免尿潴留", how:"多饮水诱导", benefit:"防出血", alt:"" },
+    { id:101, name:"恶露观察", role:"妈妈", cat:"护理事项", emoji:"\u{1FA78}", qty:0, s:0, e:42, desc:"记录变化", what:"观察恶露", why:"反映恢复", how:"记录颜色量", benefit:"早发现异常", alt:"" },
+    { id:102, name:"生理性胀奶处理", role:"妈妈", cat:"护理事项", emoji:"\u{1F348}", qty:0, s:2, e:7, desc:"乳房肿胀", what:"胀奶", why:"易致乳腺炎", how:"冷敷勤吸", benefit:"缓解", alt:"禁暴力揉" },
+    { id:103, name:"早吸吮早开奶", role:"妈妈", cat:"护理事项", emoji:"\u{1F931}", qty:0, s:0, e:0, desc:"出生1h内", what:"三早", why:"初乳抗体", how:"皮肤接触", benefit:"建立免疫", alt:"" },
+    { id:104, name:"凯格尔运动", role:"妈妈", cat:"护理事项", emoji:"\u{1F9D8}", qty:0, s:1, e:365, desc:"盆底肌训练", what:"缩紧运动", why:"改善漏尿", how:"收紧保持放松", benefit:"盆底康复", alt:"" },
+    { id:105, name:"腹直肌分离自测", role:"妈妈", cat:"护理事项", emoji:"\u{1F4CF}", qty:0, s:7, e:42, desc:"仰卧测量", what:"自测方法", why:"分离导致腰痛", how:"仰卧抬肩探入", benefit:"及时干预", alt:"避免卷腹" },
+    { id:200, name:"卡介苗", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F489}", qty:0, s:0, e:1, desc:"24h内接种", what:"结核疫苗", why:"预防重症结核", how:"左上臂皮内", benefit:"大幅降低风险", alt:"必种" },
+    { id:201, name:"乙肝疫苗①", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F489}", qty:0, s:0, e:1, desc:"24h内", what:"乙肝疫苗", why:"阻断传播", how:"大腿肌注", benefit:"保护率95%", alt:"" },
+    { id:202, name:"足底血筛查", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1FA78}", qty:0, s:2, e:3, desc:"72h后采血", what:"遗传代谢病筛查", why:"早期无症状", how:"足跟采血", benefit:"及时干预", alt:"" },
+    { id:203, name:"听力筛查", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F442}", qty:0, s:2, e:3, desc:"无创测试", what:"听力测试", why:"早发现耳聋", how:"睡眠中测", benefit:"避免聋哑", alt:"" },
+    { id:204, name:"乙肝疫苗②", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F489}", qty:0, s:30, e:30, desc:"满月接种", what:"第二针", why:"完成基础免疫", how:"社区接种", benefit:"保护力提升", alt:"" },
+    { id:205, name:"满月体检", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F4CB}", qty:0, s:28, e:32, desc:"评估发育", what:"体格检查", why:"早发现偏离", how:"社区/儿科", benefit:"健康监测", alt:"" }
   ];
 
-  const STORAGE_CUSTOM = 'bb_custom_final2';
-  const STORAGE_STATES = 'bb_states_final2';
-  const STORAGE_DAY = 'bb_day_final2';
-  const GIT_CONFIG_KEY = 'gh_config_final2';
-  const AUTO_SYNC_KEY = 'autoSyncEnabled';
+  const STORAGE_CUSTOM = 'bb_custom_final5';
+  const STORAGE_STATES = 'bb_states_final5';
+  const STORAGE_DAY = 'bb_day_final5';
+  const GIT_CONFIG_KEY = 'gh_config_final5';
+  const AUTO_SYNC_KEY = 'autoSyncEnabled5';
 
   let customItems = JSON.parse(localStorage.getItem(STORAGE_CUSTOM) || '[]');
   let itemStates = JSON.parse(localStorage.getItem(STORAGE_STATES) || '{}');
   let currentDay = parseInt(localStorage.getItem(STORAGE_DAY)) || 0;
   let ghConfig = JSON.parse(localStorage.getItem(GIT_CONFIG_KEY) || 'null');
-  let autoSyncEnabled = localStorage.getItem(AUTO_SYNC_KEY) !== 'false'; // 默认开启
+  let autoSyncEnabled = localStorage.getItem(AUTO_SYNC_KEY) !== 'false';
 
   function saveLocal() {
     localStorage.setItem(STORAGE_CUSTOM, JSON.stringify(customItems));
@@ -605,16 +604,26 @@
     if (autoSyncEnabled) scheduleAutoSync();
   });
 
-  // 按钮事件
-  document.getElementById('uploadBtn').addEventListener('click', async () => {
-    if (!ghConfig) return document.getElementById('syncModal').style.display = 'flex';
+  // 按钮事件（未配置时弹出设置，自动填充令牌）
+  document.getElementById('uploadBtn').addEventListener('click', async function() {
+    if (!ghConfig) {
+      document.getElementById('syncModal').style.display = 'flex';
+      document.getElementById('repoUrl').value = 'https://github.com/july-begins/baby-checklist';
+      document.getElementById('repoToken').value = ghConfig?.token || '';
+      return;
+    }
     showToast('正在同步到云端...');
     const ok = await uploadToGitHub();
     showToast(ok ? '已同步' : '同步失败');
   });
 
-  document.getElementById('downloadBtn').addEventListener('click', async () => {
-    if (!ghConfig) return document.getElementById('syncModal').style.display = 'flex';
+  document.getElementById('downloadBtn').addEventListener('click', async function() {
+    if (!ghConfig) {
+      document.getElementById('syncModal').style.display = 'flex';
+      document.getElementById('repoUrl').value = 'https://github.com/july-begins/baby-checklist';
+      document.getElementById('repoToken').value = ghConfig?.token || '';
+      return;
+    }
     showToast('正在从云端同步...');
     const ok = await downloadFromGitHub();
     if (ok) { document.getElementById('dayInput').value = currentDay; render(); updateAlert(); }
