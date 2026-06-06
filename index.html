@@ -3,74 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>待产包 & 新生儿护理 · 最终稳定版</title>
+  <title>待产包 & 新生儿护理 · 最终完美版</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #faf7f2; color: #3e362e; padding: 12px; max-width: 750px; margin: 0 auto; }
-    .header { text-align: center; margin: 10px 0 16px; }
-    .header h1 { font-size: 1.8rem; color: #b08968; }
-    .header p { color: #8b7355; font-size: 0.9rem; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background:#faf7f2; color:#3e362e; padding:12px; max-width:750px; margin:0 auto; }
+    .header { text-align:center; margin:10px 0 16px; }
+    .header h1 { font-size:1.8rem; color:#b08968; }
+    .header p { color:#8b7355; font-size:0.9rem; }
 
-    .sync-controls { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; flex-wrap: wrap; align-items: center; }
-    .btn { padding: 10px 18px; border-radius: 24px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-    .btn-primary { background: #b08968; color: white; }
-    .btn-outline { background: #fff; color: #b08968; border: 2px solid #b08968; }
-    .sync-status { font-size: 0.8rem; text-align: center; margin: 6px 0 12px; color: #8b7355; }
+    .sync-controls { display:flex; gap:8px; margin-bottom:12px; justify-content:center; flex-wrap:wrap; align-items:center; }
+    .btn { padding:10px 18px; border-radius:24px; font-weight:700; font-size:0.85rem; cursor:pointer; border:none; transition:0.2s; display:inline-flex; align-items:center; gap:6px; }
+    .btn-primary { background:#b08968; color:white; }
+    .btn-outline { background:#fff; color:#b08968; border:2px solid #b08968; }
+    .sync-status { font-size:0.8rem; text-align:center; margin:6px 0 12px; color:#8b7355; }
 
-    .toggle-sync { background: #f0e5d8; border: none; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
-    .toggle-sync.active { background: #b08968; color: white; }
+    .toggle-sync { background:#f0e5d8; border:none; padding:6px 14px; border-radius:20px; font-weight:600; font-size:0.75rem; cursor:pointer; transition:0.2s; }
+    .toggle-sync.active { background:#b08968; color:white; }
 
-    .timeline-bar { background: #fff; border-radius: 24px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .day-input { width: 75px; padding: 10px; border-radius: 16px; border: 2px solid #ddc; text-align: center; font-size: 1.1rem; font-weight: 700; color: #b08968; }
-    .stage-badge { background: #ede0d4; padding: 8px 18px; border-radius: 20px; font-weight: 700; color: #5c4330; }
-    .quick-stages { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-    .stage-dot { padding: 8px 14px; border-radius: 18px; background: #f0e5d8; font-size: 0.8rem; font-weight: 600; color: #7f5539; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-    .stage-dot.active { background: #b08968; color: white; border-color: #b08968; }
+    .timeline-bar { background:#fff; border-radius:24px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+    .day-input { width:75px; padding:10px; border-radius:16px; border:2px solid #ddc; text-align:center; font-size:1.1rem; font-weight:700; color:#b08968; }
+    .stage-badge { background:#ede0d4; padding:8px 18px; border-radius:20px; font-weight:700; color:#5c4330; }
+    .quick-stages { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .stage-dot { padding:8px 14px; border-radius:18px; background:#f0e5d8; font-size:0.8rem; font-weight:600; color:#7f5539; cursor:pointer; border:2px solid transparent; transition:0.2s; }
+    .stage-dot.active { background:#b08968; color:white; border-color:#b08968; }
 
-    .alert-panel { background: #fffbf0; border: 2px solid #e7c97b; border-radius: 20px; padding: 16px; margin-bottom: 16px; display: flex; gap: 12px; }
-    .progress-panel { background: #fff; border-radius: 20px; padding: 14px 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 15px; }
-    .progress-bar { flex: 1; height: 10px; background: #ede0d4; border-radius: 10px; overflow: hidden; }
-    .progress-fill { height: 100%; background: #b08968; width: 0%; transition: width 0.3s; }
+    .alert-panel { background:#fffbf0; border:2px solid #e7c97b; border-radius:20px; padding:16px; margin-bottom:16px; display:flex; gap:12px; }
+    .progress-panel { background:#fff; border-radius:20px; padding:14px 18px; margin-bottom:14px; display:flex; align-items:center; gap:15px; }
+    .progress-bar { flex:1; height:10px; background:#ede0d4; border-radius:10px; overflow:hidden; }
+    .progress-fill { height:100%; background:#b08968; width:0%; transition:width 0.3s; }
 
-    .view-row, .filter-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-    .view-btn, .filter-chip { background: #fff; border: 1px solid #ddcec0; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-    .view-btn.active, .filter-chip.active { background: #b08968; color: white; border-color: #b08968; }
+    .view-row, .filter-row { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .view-btn, .filter-chip { background:#fff; border:1px solid #ddcec0; padding:8px 16px; border-radius:20px; font-weight:600; font-size:0.85rem; cursor:pointer; }
+    .view-btn.active, .filter-chip.active { background:#b08968; color:white; border-color:#b08968; }
 
-    .item-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-    .item-card { background: #fff; border-radius: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border-left: 6px solid #ddcec0; overflow: hidden; }
-    .item-card.urgent { border-left-color: #e6a23c; background: #fffbf5; }
-    .item-card.bought { border-left-color: #e6b85c; }
-    .item-card.packed { border-left-color: #9caf8d; }
-    .item-main { display: flex; align-items: center; gap: 12px; padding: 14px; cursor: pointer; }
-    .item-emoji { font-size: 2rem; min-width: 45px; }
-    .item-info { flex: 1; }
-    .item-title { font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .item-badge { background: #f0e5d8; color: #7f5539; font-size: 0.65rem; padding: 2px 10px; border-radius: 12px; }
-    .remain-badge { background: #f4ede4; border-radius: 12px; padding: 6px 12px; font-weight: 700; color: #5c4330; display: flex; align-items: center; gap: 6px; }
-    .remain-badge.low { background: #ffeaea; color: #c0392b; }
-    .qty-btn { background: #fff; border: 1.5px solid #c4b3a0; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .status-btn { border: 1.5px solid #ddcbbd; background: #fff; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.75rem; cursor: pointer; }
-    .status-btn.active-bought { background: #e6b85c; border-color: #e6b85c; color: white; }
-    .status-btn.active-packed { background: #9caf8d; border-color: #9caf8d; color: white; }
-    .status-btn.active-done { background: #7fa998; border-color: #7fa998; color: white; }
-    .status-btn.active-skip { background: #c4b7a6; border-color: #c4b7a6; color: white; }
-    .status-btn.active-none { background: #e9e1d8; border-color: #c0b3a5; }
+    .item-list { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+    .item-card { background:#fff; border-radius:18px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border-left:6px solid #ddcec0; overflow:hidden; }
+    .item-card.urgent { border-left-color:#e6a23c; background:#fffbf5; }
+    .item-card.bought { border-left-color:#e6b85c; }
+    .item-card.packed { border-left-color:#9caf8d; }
+    .item-main { display:flex; align-items:center; gap:12px; padding:14px; cursor:pointer; }
+    .item-emoji { font-size:2rem; min-width:45px; }
+    .item-info { flex:1; }
+    .item-title { font-weight:700; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .item-badge { background:#f0e5d8; color:#7f5539; font-size:0.65rem; padding:2px 10px; border-radius:12px; }
+    .remain-badge { background:#f4ede4; border-radius:12px; padding:6px 12px; font-weight:700; color:#5c4330; display:flex; align-items:center; gap:6px; }
+    .remain-badge.low { background:#ffeaea; color:#c0392b; }
+    .qty-btn { background:#fff; border:1.5px solid #c4b3a0; border-radius:50%; width:28px; height:28px; font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .status-btn { border:1.5px solid #ddcbbd; background:#fff; padding:6px 14px; border-radius:20px; font-weight:700; font-size:0.75rem; cursor:pointer; }
+    .status-btn.active-bought { background:#e6b85c; border-color:#e6b85c; color:white; }
+    .status-btn.active-packed { background:#9caf8d; border-color:#9caf8d; color:white; }
+    .status-btn.active-done { background:#7fa998; border-color:#7fa998; color:white; }
+    .status-btn.active-skip { background:#c4b7a6; border-color:#c4b7a6; color:white; }
+    .status-btn.active-none { background:#e9e1d8; border-color:#c0b3a5; }
 
-    .detail-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #fdfaf5; border-top: 1px dashed #ddcec0; padding: 0 14px; }
-    .detail-panel.open { max-height: 600px; padding: 14px; }
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; }
-    .detail-item { background: #fff; border-radius: 12px; padding: 8px; border: 1px solid #f0e5d8; }
-    .detail-label { font-weight: 700; color: #b08968; font-size: 0.7rem; margin-bottom: 4px; }
-    .brand-row { display: flex; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
-    .brand-row input { flex: 1; padding: 6px; border-radius: 8px; border: 1px solid #ddc; min-width: 80px; }
+    .detail-panel { max-height:0; overflow:hidden; transition:max-height 0.3s ease; background:#fdfaf5; border-top:1px dashed #ddcec0; padding:0 14px; }
+    .detail-panel.open { max-height:600px; padding:14px; }
+    .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.8rem; }
+    .detail-item { background:#fff; border-radius:12px; padding:8px; border:1px solid #f0e5d8; }
+    .detail-label { font-weight:700; color:#b08968; font-size:0.7rem; margin-bottom:4px; }
+    .brand-row { display:flex; gap:10px; margin-top:10px; align-items:center; flex-wrap:wrap; }
+    .brand-row input { flex:1; padding:6px; border-radius:8px; border:1px solid #ddc; min-width:80px; }
 
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; }
-    .modal { background: white; border-radius: 24px; padding: 20px; max-width: 500px; width: 90%; max-height: 85vh; overflow-y: auto; }
-    .modal h3 { color: #b08968; margin-bottom: 14px; }
-    .modal input, .modal select, .modal textarea { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ddc; margin-bottom: 10px; font-size: 0.9rem; }
-    .modal .btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
-    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #3e362e; color: white; padding: 10px 24px; border-radius: 24px; opacity: 0; transition: 0.3s; z-index: 999; }
-    .toast.show { opacity: 0.9; }
+    .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center; z-index:1000; }
+    .modal { background:white; border-radius:24px; padding:20px; max-width:500px; width:90%; max-height:85vh; overflow-y:auto; }
+    .modal h3 { color:#b08968; margin-bottom:14px; }
+    .modal input, .modal select, .modal textarea { width:100%; padding:10px; border-radius:12px; border:1px solid #ddc; margin-bottom:10px; font-size:0.9rem; }
+    .modal .btn-row { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+    .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#3e362e; color:white; padding:10px 24px; border-radius:24px; opacity:0; transition:0.3s; z-index:999; }
+    .toast.show { opacity:0.9; }
   </style>
 </head>
 <body>
@@ -126,7 +126,7 @@
 <div class="item-list" id="itemList"></div>
 <div class="toast" id="toast"></div>
 
-<!-- 弹窗结构不变 -->
+<!-- 云同步设置弹窗 -->
 <div class="modal-overlay" id="syncModal">
   <div class="modal">
     <h3>☁️ GitHub 云同步设置</h3>
@@ -142,6 +142,7 @@
   </div>
 </div>
 
+<!-- 手动添加弹窗 -->
 <div class="modal-overlay" id="manualModal">
   <div class="modal">
     <h3>➕ 添加物品</h3>
@@ -170,6 +171,7 @@
   </div>
 </div>
 
+<!-- 物品库弹窗 -->
 <div class="modal-overlay" id="libraryModal">
   <div class="modal">
     <h3>📚 物品库</h3>
@@ -184,7 +186,7 @@
 
 <script>
 (function() {
-  // 完整物品库 (Unicode 转义)
+  // 完整物品库 (Unicode 转义，保证跨平台兼容)
   const masterLibrary = [
     { id:1, name:"产褥垫", role:"妈妈", cat:"卫生", emoji:"\u{1F6CF}", qty:15, s:-3, e:5, desc:"60×90cm一次性防水垫", what:"一次性防水垫巾", why:"防止羊水恶露污染", how:"平铺臀下脏即换", benefit:"方便卫生", alt:"子初/十月结晶" },
     { id:2, name:"产妇卫生巾", role:"妈妈", cat:"卫生", emoji:"\u{1FA79}", qty:10, s:0, e:7, desc:"L/XL加大吸收", what:"加大卫生巾", why:"准确评估出血量", how:"每2-3h更换", benefit:"干爽不侧漏", alt:"安心裤" },
@@ -247,12 +249,12 @@
     { id:205, name:"满月体检", role:"宝宝", cat:"疫苗/检查", emoji:"\u{1F4CB}", qty:0, s:28, e:32, desc:"评估发育", what:"体格检查", why:"早发现偏离", how:"社区/儿科", benefit:"健康监测", alt:"" }
   ];
 
-  // 状态存储
-  const STORAGE_CUSTOM = 'bb_custom_stable2';
-  const STORAGE_STATES = 'bb_states_stable2';
-  const STORAGE_DAY = 'bb_day_stable2';
-  const GIT_CONFIG_KEY = 'gh_config_stable2';
-  const AUTO_SYNC_KEY = 'autoSync_stable2';
+  // 统一存储键
+  const STORAGE_CUSTOM = 'bb_custom_final';
+  const STORAGE_STATES = 'bb_states_final';
+  const STORAGE_DAY = 'bb_day_final';
+  const GIT_CONFIG_KEY = 'gh_config_final';
+  const AUTO_SYNC_KEY = 'autoSync_final';
 
   let customItems = JSON.parse(localStorage.getItem(STORAGE_CUSTOM) || '[]');
   let itemStates = JSON.parse(localStorage.getItem(STORAGE_STATES) || '{}');
@@ -434,17 +436,17 @@
     if (btn.id === 'libraryClose') { document.getElementById('libraryModal').style.display = 'none'; return; }
 
     if (btn.id === 'uploadBtn') {
-      if (!ghConfig) { document.getElementById('syncModal').style.display = 'flex'; return; }
-      showToast('正在同步...');
-      uploadToGitHub().then(ok => showToast(ok ? '已同步' : '失败'));
+      if (!ghConfig) { showSyncModal(); return; }
+      showToast('正在同步到云端...');
+      uploadToGitHub().then(ok => showToast(ok ? '已同步' : '失败，请检查网络或令牌'));
       return;
     }
     if (btn.id === 'downloadBtn') {
-      if (!ghConfig) { document.getElementById('syncModal').style.display = 'flex'; return; }
-      showToast('正在下载...');
+      if (!ghConfig) { showSyncModal(); return; }
+      showToast('正在从云端同步...');
       downloadFromGitHub().then(ok => {
         if (ok) { document.getElementById('dayInput').value = currentDay; render(); renderLibrary(); updateAlert(); }
-        showToast(ok ? '已更新' : '失败');
+        showToast(ok ? '已更新' : '下载失败，请检查网络');
       });
       return;
     }
@@ -476,6 +478,7 @@
     if (btn.id === 'exportBtn') {
       const blob = new Blob([JSON.stringify({ customItems, itemStates, currentDay })], {type:'application/json'});
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '待产包备份.json'; a.click();
+      showToast('备份文件已下载');
       return;
     }
     if (btn.id === 'importBtn') { document.getElementById('importFileInput').click(); return; }
@@ -489,6 +492,19 @@
       return;
     }
   });
+
+  function showSyncModal() {
+    const modal = document.getElementById('syncModal');
+    // 自动填充已保存的配置
+    if (ghConfig) {
+      document.getElementById('repoUrl').value = ghConfig.url || 'https://github.com/july-begins/baby-checklist';
+      document.getElementById('repoToken').value = ghConfig.token || '';
+    } else {
+      document.getElementById('repoUrl').value = 'https://github.com/july-begins/baby-checklist';
+      document.getElementById('repoToken').value = '';
+    }
+    modal.style.display = 'flex';
+  }
 
   document.getElementById('dayInput').addEventListener('change', () => { currentDay = parseInt(document.getElementById('dayInput').value) || 0; saveLocal(); updateStage(); render(); });
   document.getElementById('quickStages').addEventListener('click', e => {
@@ -563,7 +579,6 @@
       showToast(`已填充“${found.name}”`);
     } else showToast('未找到');
   });
-
   document.getElementById('jdSearchBtn').addEventListener('click', () => { const name = document.getElementById('searchName').value.trim(); if(name) window.open(`https://search.jd.com/Search?keyword=${encodeURIComponent(name)}`); });
   document.getElementById('taobaoSearchBtn').addEventListener('click', () => { const name = document.getElementById('searchName').value.trim(); if(name) window.open(`https://s.taobao.com/search?q=${encodeURIComponent(name)}`); });
   document.getElementById('clipboardBtn').addEventListener('click', async () => { try { const text = await navigator.clipboard.readText(); document.getElementById('mName').value = text.split(/[\s,]+/)[0] || ''; document.getElementById('mDesc').value = text.slice(0,50); showToast('已识别剪切板'); } catch { showToast('无法读取剪切板'); } });
@@ -640,8 +655,6 @@
         itemStates = data.itemStates || {};
         currentDay = data.currentDay || 0;
         saveLocal();
-        // 强制刷新物品库
-        renderLibrary();
         return true;
       }
     } catch (e) { console.error(e); }
@@ -678,12 +691,14 @@
     setTimeout(() => t.classList.remove('show'), 2000);
   }
 
+  // 初始化
   document.getElementById('dayInput').value = currentDay;
   updateStage();
   render();
   updateAlert();
   if (ghConfig) {
     document.getElementById('syncStatus').textContent = autoSyncEnabled ? '☁️ 已配置' : '🔒 自动同步关闭';
+    scheduleAutoSync();
   }
 })();
 </script>
